@@ -1,0 +1,439 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!668709126 &-8647603256439113596
+BuiltAssetBundleInfoSet:
+  bundleInfos:
+  - bundleName: scene-standalonewindows64-throwingscene.vrcw
+    bundleArchiveFile: 2
+    packagedFileIndices: 0000000001000000
+  - bundleName: VRThrowingSystem
+    bundleArchiveFile: 5
+    packagedFileIndices: 04000000
+--- !u!382020655 &-7783633656300412906
+PluginBuildInfo:
+  m_RuntimePlugins:
+  - Unity.Burst.Unsafe
+  - VRC.SDK3.Dynamics.PhysBone
+  - OVRPlugin
+  - YamlDotNet
+  - WatsonTcp
+  - System.Threading.Tasks.Extensions
+  - VRC.Udon.ClientBindings
+  - openvr_api
+  - portmidi
+  - VRC.Udon.VRCWrapperModules
+  - VRCSDK3
+  - VRC.Udon.VM
+  - Serilog
+  - nunit.framework
+  - SemanticVersioning
+  - librsync.net
+  - VRC.Udon.Common
+  - VRC.SDK3.Dynamics.Contact
+  - Collections.Pooled
+  - System.Collections.Immutable
+  - System.Numerics.Vectors
+  - System.Buffers
+  - VRC.Dynamics
+  - VRC.Udon.Wrapper
+  - Serilog.Sinks.File
+  - VRC.Udon.Security
+  - clipper_library
+  - VRC.Collections
+  - VRCSDKBase
+  - System.Runtime.CompilerServices.Unsafe
+  - Newtonsoft.Json
+  - libopenvr_api
+  - Blake2Sharp
+  - System.Memory
+  - System.Text.Encoding.CodePages
+  - VRCCore-Editor
+  - VRC.Utility
+  - AudioPluginOculusSpatializer
+  m_EditorPlugins:
+  - VRCSDK3-Editor
+  - Microsoft.CodeAnalysis
+  - VRC.Udon.VRCTypeResolverModules
+  - AppleEventIntegration
+  - liblz4Plastic
+  - Unity.Plastic.Newtonsoft.Json
+  - unityplastic
+  - VRC.Udon.Compiler
+  - System.Reflection.Metadata
+  - Microsoft.CodeAnalysis.CSharp
+  - VRC.Udon.UAssembly
+  - vpm-core-lib
+  - VRC.Udon.Graph
+  - UnityEditor.VR
+  - 0Harmony
+  - VRC.SDK3.Dynamics.PhysBone.Editor
+  - VRCSDKBase-Editor
+  - VRC.SDK3.Dynamics.Contact.Editor
+  - VRC.Udon.VRCGraphModules
+  - log4netPlastic
+  - VRC.Udon.EditorBindings
+  - zlib64Plastic
+  - Unity.Plastic.Antlr3.Runtime
+  - Serilog.Sinks.Unity3D
+  - lz4x64Plastic
+--- !u!641289076 &-3966284937136714334
+AudioBuildInfo:
+  m_IsAudioDisabled: 0
+  m_AudioClipCount: 0
+  m_AudioMixerCount: 0
+--- !u!1126 &-1239507893016589528
+PackedAssets:
+  m_File: 1
+  m_ShortPath: BuildPlayer-ThrowingScene.sharedAssets
+  m_Overhead: 77479
+  m_Contents:
+  - fileID: 1
+    classID: 150
+    packedSize: 49
+    offset: 77912
+    sourceAssetGUID: 00000000000000000000000000000000
+    buildTimeAssetPath: 
+  - fileID: 2
+    classID: 142
+    packedSize: 156
+    offset: 77968
+    sourceAssetGUID: 00000000000000000000000000000000
+    buildTimeAssetPath: 
+  - fileID: 3
+    classID: 21
+    packedSize: 1052
+    offset: 78128
+    sourceAssetGUID: 0000000000000000f000000000000000
+    buildTimeAssetPath: Resources/unity_builtin_extra
+  - fileID: 4
+    classID: 21
+    packedSize: 252
+    offset: 79184
+    sourceAssetGUID: 0000000000000000f000000000000000
+    buildTimeAssetPath: Resources/unity_builtin_extra
+  - fileID: 5
+    classID: 21
+    packedSize: 896
+    offset: 79440
+    sourceAssetGUID: 80a973c9fbdffad4d82d94b21d89dc95
+    buildTimeAssetPath: Assets/ThrowingSystem/Materials/BlueMaterial.mat
+  - fileID: 6
+    classID: 21
+    packedSize: 896
+    offset: 80336
+    sourceAssetGUID: b3dbc7c8393bf5a4196c5d6a40df3a8e
+    buildTimeAssetPath: Assets/ThrowingSystem/Materials/GrayMaterial.mat
+  - fileID: 7
+    classID: 21
+    packedSize: 900
+    offset: 81232
+    sourceAssetGUID: 51f7dfde57dcecb4aac6a8581ca2c4bf
+    buildTimeAssetPath: Assets/ThrowingSystem/Materials/WhiteMaterial.mat
+  - fileID: 8
+    classID: 43
+    packedSize: 62608
+    offset: 82136
+    sourceAssetGUID: 581e842bfdd6b96449709e516d3eada0
+    buildTimeAssetPath: Assets/ThrowingSystem/Model/Disk.blend
+  - fileID: 9
+    classID: 43
+    packedSize: 24664
+    offset: 144744
+    sourceAssetGUID: 8ec143f794d40764da9978abb90b085d
+    buildTimeAssetPath: Assets/ThrowingSystem/Model/Guard.blend
+  - fileID: 10
+    classID: 48
+    packedSize: 165480
+    offset: 169408
+    sourceAssetGUID: 0000000000000000f000000000000000
+    buildTimeAssetPath: Resources/unity_builtin_extra
+  - fileID: 11
+    classID: 48
+    packedSize: 13452
+    offset: 334888
+    sourceAssetGUID: 0000000000000000f000000000000000
+    buildTimeAssetPath: Resources/unity_builtin_extra
+  - fileID: 12
+    classID: 115
+    packedSize: 96
+    offset: 77392
+    sourceAssetGUID: 4ecd63eff847044b68db9453ce219299
+    buildTimeAssetPath: Packages/com.vrchat.base/Runtime/VRCSDK/Plugins/VRCCore-Editor.dll
+  - fileID: 13
+    classID: 115
+    packedSize: 108
+    offset: 77488
+    sourceAssetGUID: 661092b4961be7145bfbe56e1e62337b
+    buildTimeAssetPath: Packages/com.vrchat.worlds/Runtime/VRCSDK/Plugins/VRCSDK3.dll
+  - fileID: 14
+    classID: 115
+    packedSize: 88
+    offset: 77600
+    sourceAssetGUID: 45115577ef41a5b4ca741ed302693907
+    buildTimeAssetPath: Packages/com.vrchat.worlds/Runtime/Udon/UdonBehaviour.cs
+  - fileID: 15
+    classID: 115
+    packedSize: 128
+    offset: 77688
+    sourceAssetGUID: bf61d954ecb803046953c666facfb904
+    buildTimeAssetPath: Packages/com.vrchat.worlds/Runtime/Udon/ProgramSources/SerializedUdonProgramAsset.cs
+  - fileID: 16
+    classID: 115
+    packedSize: 92
+    offset: 77816
+    sourceAssetGUID: 661092b4961be7145bfbe56e1e62337b
+    buildTimeAssetPath: Packages/com.vrchat.worlds/Runtime/VRCSDK/Plugins/VRCSDK3.dll
+  - fileID: 17
+    classID: 1
+    packedSize: 111
+    offset: 348344
+    sourceAssetGUID: 3fdb0309d6ec9f44c8fa42ef966e25ec
+    buildTimeAssetPath: Assets/UdonSharp/PrefabBuild/Assets/ThrowingSystem/Prefab/DiskPrefab.prefab
+  - fileID: 18
+    classID: 1
+    packedSize: 39
+    offset: 348456
+    sourceAssetGUID: 99cba5dcfd638ea44926b0e96f8521a3
+    buildTimeAssetPath: Assets/UdonSharp/PrefabBuild/Assets/ThrowingSystem/Prefab/ThowingPlayer.prefab
+  - fileID: 19
+    classID: 1
+    packedSize: 71
+    offset: 348496
+    sourceAssetGUID: 3fdb0309d6ec9f44c8fa42ef966e25ec
+    buildTimeAssetPath: Assets/UdonSharp/PrefabBuild/Assets/ThrowingSystem/Prefab/DiskPrefab.prefab
+  - fileID: 20
+    classID: 1
+    packedSize: 67
+    offset: 348568
+    sourceAssetGUID: 99cba5dcfd638ea44926b0e96f8521a3
+    buildTimeAssetPath: Assets/UdonSharp/PrefabBuild/Assets/ThrowingSystem/Prefab/ThowingPlayer.prefab
+  - fileID: 21
+    classID: 4
+    packedSize: 68
+    offset: 348640
+    sourceAssetGUID: 3fdb0309d6ec9f44c8fa42ef966e25ec
+    buildTimeAssetPath: Assets/UdonSharp/PrefabBuild/Assets/ThrowingSystem/Prefab/DiskPrefab.prefab
+  - fileID: 22
+    classID: 4
+    packedSize: 68
+    offset: 348712
+    sourceAssetGUID: 99cba5dcfd638ea44926b0e96f8521a3
+    buildTimeAssetPath: Assets/UdonSharp/PrefabBuild/Assets/ThrowingSystem/Prefab/ThowingPlayer.prefab
+  - fileID: 23
+    classID: 4
+    packedSize: 80
+    offset: 348784
+    sourceAssetGUID: 3fdb0309d6ec9f44c8fa42ef966e25ec
+    buildTimeAssetPath: Assets/UdonSharp/PrefabBuild/Assets/ThrowingSystem/Prefab/DiskPrefab.prefab
+  - fileID: 24
+    classID: 4
+    packedSize: 80
+    offset: 348864
+    sourceAssetGUID: 99cba5dcfd638ea44926b0e96f8521a3
+    buildTimeAssetPath: Assets/UdonSharp/PrefabBuild/Assets/ThrowingSystem/Prefab/ThowingPlayer.prefab
+  - fileID: 25
+    classID: 23
+    packedSize: 140
+    offset: 348944
+    sourceAssetGUID: 3fdb0309d6ec9f44c8fa42ef966e25ec
+    buildTimeAssetPath: Assets/UdonSharp/PrefabBuild/Assets/ThrowingSystem/Prefab/DiskPrefab.prefab
+  - fileID: 26
+    classID: 23
+    packedSize: 140
+    offset: 349088
+    sourceAssetGUID: 3fdb0309d6ec9f44c8fa42ef966e25ec
+    buildTimeAssetPath: Assets/UdonSharp/PrefabBuild/Assets/ThrowingSystem/Prefab/DiskPrefab.prefab
+  - fileID: 27
+    classID: 33
+    packedSize: 24
+    offset: 349232
+    sourceAssetGUID: 3fdb0309d6ec9f44c8fa42ef966e25ec
+    buildTimeAssetPath: Assets/UdonSharp/PrefabBuild/Assets/ThrowingSystem/Prefab/DiskPrefab.prefab
+  - fileID: 28
+    classID: 33
+    packedSize: 24
+    offset: 349256
+    sourceAssetGUID: 3fdb0309d6ec9f44c8fa42ef966e25ec
+    buildTimeAssetPath: Assets/UdonSharp/PrefabBuild/Assets/ThrowingSystem/Prefab/DiskPrefab.prefab
+  - fileID: 29
+    classID: 54
+    packedSize: 36
+    offset: 349280
+    sourceAssetGUID: 3fdb0309d6ec9f44c8fa42ef966e25ec
+    buildTimeAssetPath: Assets/UdonSharp/PrefabBuild/Assets/ThrowingSystem/Prefab/DiskPrefab.prefab
+  - fileID: 30
+    classID: 64
+    packedSize: 48
+    offset: 349320
+    sourceAssetGUID: 3fdb0309d6ec9f44c8fa42ef966e25ec
+    buildTimeAssetPath: Assets/UdonSharp/PrefabBuild/Assets/ThrowingSystem/Prefab/DiskPrefab.prefab
+  - fileID: 31
+    classID: 65
+    packedSize: 52
+    offset: 349368
+    sourceAssetGUID: 99cba5dcfd638ea44926b0e96f8521a3
+    buildTimeAssetPath: Assets/UdonSharp/PrefabBuild/Assets/ThrowingSystem/Prefab/ThowingPlayer.prefab
+  - fileID: 32
+    classID: 135
+    packedSize: 44
+    offset: 349424
+    sourceAssetGUID: 3fdb0309d6ec9f44c8fa42ef966e25ec
+    buildTimeAssetPath: Assets/UdonSharp/PrefabBuild/Assets/ThrowingSystem/Prefab/DiskPrefab.prefab
+  - fileID: 33
+    classID: 114
+    packedSize: 59076
+    offset: 349472
+    sourceAssetGUID: a79a2819b9a440148b4003a84caec989
+    buildTimeAssetPath: Assets/SerializedUdonPrograms/8c943d5db7d4ecb40b950d931b9a0c4e.asset
+  - fileID: 34
+    classID: 114
+    packedSize: 128156
+    offset: 408552
+    sourceAssetGUID: d48b97e812ab400439c1291d73fee940
+    buildTimeAssetPath: Assets/SerializedUdonPrograms/b43d680ee79943d40a9f6e1dc036b57e.asset
+  - fileID: 35
+    classID: 114
+    packedSize: 117876
+    offset: 536712
+    sourceAssetGUID: 02cece83588611145941d716edab938a
+    buildTimeAssetPath: Assets/SerializedUdonPrograms/d24ad13ad91890e4d9fb5697fd3acc80.asset
+  - fileID: 36
+    classID: 114
+    packedSize: 7460
+    offset: 654592
+    sourceAssetGUID: 3fdb0309d6ec9f44c8fa42ef966e25ec
+    buildTimeAssetPath: Assets/UdonSharp/PrefabBuild/Assets/ThrowingSystem/Prefab/DiskPrefab.prefab
+  - fileID: 37
+    classID: 114
+    packedSize: 3480
+    offset: 662056
+    sourceAssetGUID: 99cba5dcfd638ea44926b0e96f8521a3
+    buildTimeAssetPath: Assets/UdonSharp/PrefabBuild/Assets/ThrowingSystem/Prefab/ThowingPlayer.prefab
+  - fileID: 38
+    classID: 114
+    packedSize: 152
+    offset: 665536
+    sourceAssetGUID: 3fdb0309d6ec9f44c8fa42ef966e25ec
+    buildTimeAssetPath: Assets/UdonSharp/PrefabBuild/Assets/ThrowingSystem/Prefab/DiskPrefab.prefab
+--- !u!1125 &1
+BuildReport:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_Name: LastWindowsBuild
+  m_Summary:
+    buildStartTime:
+      serializedVersion: 2
+      ticks: 638054396097020707
+    buildGUID: 00000000000000000000000000000000
+    platformName: Win64
+    platformGroupName: Standalone
+    options: 16
+    assetBundleOptions: 32
+    outputPath: C:/Users/kstje/AppData/Local/Temp/DefaultCompany/VRThrowingSystem/scene-standalonewindows64-throwingscene.vrcw
+    crc: 1030569044
+    totalSize: 154728
+    totalTimeTicks: 920885066
+    totalErrors: 0
+    totalWarnings: 0
+    buildType: 1
+    buildResult: 1
+  m_Files:
+  - path: E:/FiverrProjects/VRThrowingSystem/scene-standalonewindows64-throwingscene.vrcw/BuildPlayer-ThrowingScene
+    role: Scene
+    id: 0
+    totalSize: 173384
+  - path: E:/FiverrProjects/VRThrowingSystem/scene-standalonewindows64-throwingscene.vrcw/BuildPlayer-ThrowingScene.sharedAssets
+    role: SharedAssets
+    id: 1
+    totalSize: 665688
+  - path: E:/FiverrProjects/VRThrowingSystem/scene-standalonewindows64-throwingscene.vrcw
+    role: AssetBundle
+    id: 2
+    totalSize: 151939
+  - path: E:/FiverrProjects/VRThrowingSystem/scene-standalonewindows64-throwingscene.vrcw.manifest
+    role: AssetBundleTextManifest
+    id: 3
+    totalSize: 1562
+  - path: E:/FiverrProjects/VRThrowingSystem/VRThrowingSystem/CAB-76a8830ac2e52e561df229e2018e2d06
+    role: ResourcesFile
+    id: 4
+    totalSize: 4312
+  - path: E:/FiverrProjects/VRThrowingSystem/VRThrowingSystem
+    role: ManifestAssetBundle
+    id: 5
+    totalSize: 1055
+  - path: E:/FiverrProjects/VRThrowingSystem/VRThrowingSystem.manifest
+    role: AssetBundleTextManifest
+    id: 6
+    totalSize: 172
+  m_BuildSteps:
+  - stepName: Build Asset Bundles
+    durationTicks: 920885066
+    depth: 0
+    messages: []
+  - stepName: Calculate asset bundles to be built
+    durationTicks: 213036
+    depth: 1
+    messages: []
+  - stepName: Compile scripts
+    durationTicks: 465442989
+    depth: 1
+    messages: []
+  - stepName: Build player
+    durationTicks: 165112026
+    depth: 1
+    messages: []
+  - stepName: Prepare assets for target platform
+    durationTicks: 8842282
+    depth: 2
+    messages: []
+  - stepName: Building scenes
+    durationTicks: 56341900
+    depth: 2
+    messages: []
+  - stepName: Building scene Assets/ThrowingScene.unity
+    durationTicks: 56108705
+    depth: 3
+    messages: []
+  - stepName: Writing asset files
+    durationTicks: 21633321
+    depth: 2
+    messages: []
+  - stepName: Packaging assets - archive:/BuildPlayer-ThrowingScene/BuildPlayer-ThrowingScene.sharedAssets
+    durationTicks: 21342675
+    depth: 3
+    messages: []
+  - stepName: Creating compressed player package
+    durationTicks: 10787711
+    depth: 2
+    messages: []
+  - stepName: Postprocess built player
+    durationTicks: 291293
+    depth: 2
+    messages: []
+  m_Appendices:
+  - {fileID: -8647603256439113596}
+  - {fileID: -1239507893016589528}
+  - {fileID: -7783633656300412906}
+  - {fileID: -3966284937136714334}
+  - {fileID: 6913956652501718977}
+--- !u!1126 &6913956652501718977
+PackedAssets:
+  m_File: 4
+  m_ShortPath: CAB-76a8830ac2e52e561df229e2018e2d06
+  m_Overhead: 4096
+  m_Contents:
+  - fileID: 1
+    classID: 142
+    packedSize: 104
+    offset: 4096
+    sourceAssetGUID: 00000000000000000000000000000000
+    buildTimeAssetPath: AssetBundle Object
+  - fileID: 2
+    classID: 290
+    packedSize: 112
+    offset: 4200
+    sourceAssetGUID: 00000000000000000000000000000000
+    buildTimeAssetPath: 'Built-in AssetBundleManifest: AssetBundleManifest'
