@@ -47,7 +47,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   serializationData:
-    SerializedFormat: 2
+    SerializedFormat: 0
     SerializedBytes: 
     ReferencedUnityObjects: []
     SerializedBytesString: 
@@ -58,9 +58,9 @@ MonoBehaviour:
   _udonSharpBackingUdonBehaviour: {fileID: 4686891513319392472}
   autoBlock: 1
   spawnPoint: {fileID: 9216756888088391791}
-  handSpeedThreshold: 20
+  handSpeedThreshold: 0.1
   playerSpeedThreshold: 0.1
-  buttonReleaseThreshold: 0.3
+  buttonReleaseThreshold: 0.1
   leftHand: 0
   rightHand: 0
 --- !u!114 &4686891513319392472

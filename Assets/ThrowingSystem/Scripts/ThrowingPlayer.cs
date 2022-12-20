@@ -38,7 +38,6 @@ namespace ThrowingSystem
         private string vrThrowLeftInput;
         private string vrThrowRightInput;
 
-
         private ThrowingObject tempDisk;
         VRCPlayerApi.TrackingData tData;
 
@@ -72,9 +71,9 @@ namespace ThrowingSystem
             secondDisk = null;
         }
 
-        public override void OnPlayerTriggerEnter(VRCPlayerApi player)
+        public override void OnPlayerTriggerStay(VRCPlayerApi player)
         {
-            base.OnPlayerTriggerEnter(player);
+            base.OnPlayerTriggerStay(player);
 
             ThrowingSystem ts = GameObject.Find("ThrowingSystem").GetComponent<ThrowingSystem>();
             if (ts != null)
@@ -315,9 +314,9 @@ namespace ThrowingSystem
             _player = player;
         }
 
-        public override void InputJump(bool value, UdonInputEventArgs args)
+        private void OnDestroy()
         {
-
+            ResetDisks();
         }
     }
 }

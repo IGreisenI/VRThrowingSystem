@@ -29,21 +29,6 @@ namespace ThrowingSystem
         [Header("List of cached throwing player")]
         [SerializeField] private GameObject[] throwingPlayersGameObjects;
 
-        /*private void Start()
-        {
-            InitThrowingPlayer(Networking.LocalPlayer);
-        }*/
-
-        /*public void OnPlayerConnected(VRCPlayerApi player)
-        {
-            InitThrowingPlayer(player);
-        }
-
-        public void OnPlayerDisconnected(VRCPlayerApi player)
-        {
-            RemoveThrowingPlayer(player);
-        }*/
-
         public void InitThrowingPlayer(VRCPlayerApi player)
         {
             GameObject disk1 = FindAvaliableDisk();
@@ -80,6 +65,17 @@ namespace ThrowingSystem
                 }
             }
             return null;
+        }
+
+        public void MakeDiskAvaliable(VRCPlayerApi player)
+        {
+            for (int i = 0; i < disks.Length; i++)
+            {
+                if (disks[i].GetComponent<ThrowingObject>().GetPlayer() == player)
+                {
+                    disks[i].GetComponent<ThrowingObject>().ResetDisk();
+                }
+            }   
         }
 
         public ThrowingPlayer FindAvaliableThrowingPlayerObject()

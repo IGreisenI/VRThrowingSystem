@@ -8,8 +8,11 @@ namespace ThrowingSystem
 {
     public class ThrowingObject : UdonSharpBehaviour
     {
-        [Header("General Settings")]
+        [Header("Prefabs and Scene Objects")]
+        [SerializeField] private BoxCollider arenaCollider;
         [SerializeField] private GameObject guardObject;
+
+        [Header("General Settings")]
         [SerializeField] private float returnTimeSeconds;
         [SerializeField] private float gravityMultiplier;
         [SerializeField] private float returnMultiplier;
@@ -25,10 +28,6 @@ namespace ThrowingSystem
         [SerializeField] private float playerSpeedMultiplyer;
         [SerializeField] private float vrThrowMultiplyer;
 
-        public VRCPlayerApi _localPlayer;
-        private Rigidbody rb;
-        private bool _isUserInVR;
-
         [Header("Avaliability")]
         [SerializeField] public bool avaliableToBeAssinged;
         [SerializeField] public bool grabbed;
@@ -38,6 +37,10 @@ namespace ThrowingSystem
         public Vector3 _handSpeed;
         public bool _blocking;
         public Vector3 desktopOffset;
+        public VRCPlayerApi _localPlayer;
+
+        private Rigidbody rb;
+        private bool _isUserInVR;
 
         private Vector3 _previousHandPos;
 
@@ -66,48 +69,6 @@ namespace ThrowingSystem
             this.desktopOffset = desktopOffset;
         }
 
-        private void OnCollisionEnter(Collision collision)
-        {
-            if (collision.collider.name.Contains("Wall") && (thrown && elapsedTime <= returnTimeSeconds))
-            {
-                diskVelocity = Vector3.Reflect(diskVelocity, collision.contacts[0].normal);
-            }
-            GetComponent<SphereCollider>().isTrigger = true;
-        }
-
-        private void OnCollisionStay(Collision collision)
-        {
-            /*if (collision.collider.name.Contains("Wall") && (thrown && elapsedTime <= returnTimeSeconds))
-            {
-                diskVelocity = Vector3.Reflect(diskVelocity, collision.contacts[0].normal);
-                ThrowingPhysics();
-                GetComponent<SphereCollider>().isTrigger = true;
-            }
-
-            GetComponent<SphereCollider>().isTrigger = true;*/
-        }
-
-        private void OnCollisionExit(Collision collision)
-        {
-            GetComponent<SphereCollider>().isTrigger = true;
-        }
-
-        private void OnTriggerEnter(Collider other)
-        {
-            if(other.name.Contains("Wall") && (thrown && elapsedTime <= returnTimeSeconds))
-            {
-                GetComponent<SphereCollider>().isTrigger = false;
-            }
-        }
-
-        private void OnTriggerStay(Collider other)
-        {
-            if (other.name.Contains("Wall") && (thrown && elapsedTime <= returnTimeSeconds))
-            {
-                GetComponent<SphereCollider>().isTrigger = false;
-            }
-        }
-
         private void FixedUpdate()
         {
             if (thrown && elapsedTime <= returnTimeSeconds)
@@ -125,6 +86,21 @@ namespace ThrowingSystem
             }
         }
 
+        private void RaycastForBounce(Vector3 position, Vector3 direction, float stepDistance)
+        {
+            RaycastHit[] hits;
+            hits = Physics.RaycastAll(position, direction, stepDistance);
+
+            foreach(RaycastHit hit in hits)
+            {
+                if (hit.collider != null && hit.collider.name != null && hit.collider.name.Contains("Wall"))
+                {
+                    diskVelocity = Vector3.Reflect(diskVelocity, hits[1].normal);
+                    break;
+                }
+            }
+        }
+
         private void ThrowingPhysics()
         {
             Vector3 point1 = this.transform.position;
@@ -132,10 +108,23 @@ namespace ThrowingSystem
             for (float step = 0; step < 1; step += stepSize)
             {
                 diskVelocity += Physics.gravity * gravityMultiplier * stepSize * Time.deltaTime;
+
+                Vector3 directionNorm = ((point1 + diskVelocity * stepSize * Time.deltaTime) - point1).normalized;
+                RaycastForBounce(point1, directionNorm, stepSize);
+
                 Vector3 point2 = point1 + diskVelocity * stepSize * Time.deltaTime;
 
-                point1 = point2;
+                // In case that the disk is out of bounds it gets placed in bounced and into play
+                if (!arenaCollider.bounds.Contains(point2))
+                {
+                    diskVelocity = Vector3.Reflect(diskVelocity, (arenaCollider.ClosestPointOnBounds(point2) - point2).normalized);
+
+                    point2 = arenaCollider.ClosestPointOnBounds(point2) + diskVelocity * stepSize * Time.deltaTime;
+                }
+
                 this.transform.position = point2;
+
+                point1 = point2;
             }
             elapsedTime += Time.deltaTime;
         }
@@ -219,6 +208,12 @@ namespace ThrowingSystem
         public VRCPlayerApi GetPlayer()
         {
             return _localPlayer;
+        }
+
+        public void ResetDisk()
+        {
+            avaliableToBeAssinged = false;
+
         }
     }
 }

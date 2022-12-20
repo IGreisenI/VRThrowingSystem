@@ -342,29 +342,27 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   serializationData:
-    SerializedFormat: 2
-    SerializedBytes: 
+    SerializedFormat: 0
+    SerializedBytes: 2d010c0000005f006c006f00630061006c0050006c006100790065007200
     ReferencedUnityObjects: []
     SerializedBytesString: 
     Prefab: {fileID: 0}
     PrefabModificationsReferencedUnityObjects: []
     PrefabModifications: []
-    SerializationNodes:
-    - Name: _localPlayer
-      Entry: 6
-      Data: 
+    SerializationNodes: []
   _udonSharpBackingUdonBehaviour: {fileID: 6825523510384247965}
+  arenaCollider: {fileID: 0}
   guardObject: {fileID: 6123364274614358525}
   returnTimeSeconds: 2
-  gravityMultiplier: 1
-  returnMultiplier: 10
-  distanceThreshold: 10
-  diskSpeedLimit: 20
+  gravityMultiplier: 0.05
+  returnMultiplier: 20
+  distanceThreshold: 20
+  diskSpeedLimit: 30
   autoBlock: 1
   thrown: 1
   desktopThrowMultiplyer: 20
-  playerSpeedMultiplyer: 1
-  vrThrowMultiplyer: 2
+  playerSpeedMultiplyer: 1.5
+  vrThrowMultiplyer: 3
   avaliableToBeAssinged: 0
   grabbed: 0
   hand: 0
