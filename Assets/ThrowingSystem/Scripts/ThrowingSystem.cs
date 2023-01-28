@@ -3,10 +3,12 @@ using System;
 using System.Linq;
 using UdonSharp;
 using UnityEngine;
+using VRC.SDK3.Components;
 using VRC.SDKBase;
 
 namespace ThrowingSystem
 {
+    [UdonBehaviourSyncMode(BehaviourSyncMode.Continuous)]
     public class ThrowingSystem : UdonSharpBehaviour
     {
         [Header("Input Settings")]
@@ -16,6 +18,7 @@ namespace ThrowingSystem
         [SerializeField] public string vrRightInput = "Oculus_CrossPlatform_SecondaryHandTrigger";
 
         [Header("Disk Settings")]
+        [SerializeField] private VRCObjectPool pool;
         [SerializeField] private GameObject objectPrefab;
         [SerializeField] public Vector3 desktopLeftOffset;
         [SerializeField] public Vector3 desktopRightOffset;
@@ -25,6 +28,7 @@ namespace ThrowingSystem
 
         [Header("List of cached disks")]
         [SerializeField] private GameObject[] disks;
+        private int position = 0;
 
         [Header("List of cached throwing player")]
         [SerializeField] private GameObject[] throwingPlayersGameObjects;
@@ -33,34 +37,16 @@ namespace ThrowingSystem
         {
             GameObject disk1 = FindAvaliableDisk();
             GameObject disk2 = FindAvaliableDisk();
-
-            /*ThrowingPlayer throwingPlayer = FindAvaliableThrowingPlayerObject();
-            if(throwingPlayer != null)
-                throwingPlayer.Initialize(player, objectPrefab, desktopRightInput, desktopLeftInput, vrRightInput, vrLeftInput, desktopLeftOffset, desktopRightOffset, disk1, disk2);*/
-        }
-
-        private void RemoveThrowingPlayer(VRCPlayerApi player)
-        {
-            for (int i = 0; i < throwingPlayersGameObjects.Length; i++)
-            {
-                if (throwingPlayersGameObjects[i].GetComponent<ThrowingPlayer>().GetPlayer() == player)
-                {
-                    throwingPlayersGameObjects[i].GetComponent<ThrowingPlayer>().ResetDisks();
-                    throwingPlayersGameObjects[i].GetComponent<ThrowingPlayer>().SetPlayer(null);
-                    throwingPlayersGameObjects[i].SetActive(false);
-                    return;
-                }
-            }
-            return;
         }
 
         public GameObject FindAvaliableDisk()
         {
-            for (int i = 0; i < disks.Length; i++)
+            for (int i = 0 + position; i < disks.Length; i++)
             {
-                if (disks[i].GetComponent<ThrowingObject>().avaliableToBeAssinged)
+                if (disks[i].GetComponent<ThrowingObject>() != null && disks[i].GetComponent<ThrowingObject>().avaliableToBeAssinged)
                 {
                     disks[i].GetComponent<ThrowingObject>().avaliableToBeAssinged = false;
+                    position++;
                     return disks[i];
                 }
             }
@@ -89,6 +75,19 @@ namespace ThrowingSystem
                 }
             }
             return null;
+        }
+
+        public GameObject spawnDisk(VRCPlayerApi player)
+        {
+            Networking.SetOwner(player, pool.gameObject);
+            GameObject obj = pool.TryToSpawn();
+            if (obj != null)
+            {
+                Networking.SetOwner(player, obj);
+                obj.GetComponent<ThrowingObject>().RequestSerialization();
+                return obj;
+            }
+            else return null;
         }
     }
 }

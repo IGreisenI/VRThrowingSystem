@@ -1,18 +1,20 @@
-﻿using System;
-using ThrowingSystem;
-using UdonSharp;
+﻿using UdonSharp;
 using UnityEngine;
+using VRC.SDK3.Components;
 using VRC.SDKBase;
-using VRC.Udon;
-using VRC.Core.Config.Interfaces;
-using VRC.Udon.Common;
 namespace ThrowingSystem
 {
     public class ThrowingPlayer : UdonSharpBehaviour
     {
-        [SerializeField] private bool autoBlock;
-        [Header("Disk Settings")]
         [SerializeField] private Transform spawnPoint;
+
+        [Header("Disk Settings")]
+        [SerializeField] private bool autoBlock;
+
+        [Header("Haptic Feedback Settings")]
+        [SerializeField] private float hapticDuration;
+        [SerializeField] private float hapticAmplitude;
+        [SerializeField] private float hapticFrequency;
 
         [Header("VR Input Settings")]
         [SerializeField] private float handSpeedThreshold;
@@ -32,14 +34,17 @@ namespace ThrowingSystem
         private VRCPlayerApi _player;
         private bool _isUserInVR;
 
-        // Input
+        #region INPUT
         private KeyCode desktopLeftThrow;
         private KeyCode desktopRightThrow;
         private string vrThrowLeftInput;
         private string vrThrowRightInput;
+        #endregion
 
-        private ThrowingObject tempDisk;
+        #region CACHE
+        private ThrowingObject temp;
         VRCPlayerApi.TrackingData tData;
+        #endregion
 
         public void Initialize(KeyCode desktopRightInput, KeyCode desktopLeftInput, string vrRightInput, string vrLeftInput,
             Vector3 desktopLeftOffset, Vector3 desktopRightOffset, GameObject firstDisk, GameObject secondDisk)
@@ -52,48 +57,46 @@ namespace ThrowingSystem
             this.desktopLeftOffset = desktopLeftOffset;
             this.desktopRightOffset = desktopRightOffset;
 
-            Networking.SetOwner(_player, firstDisk);
-            Networking.SetOwner(_player, secondDisk);
-
             this.firstDisk = firstDisk.GetComponent<ThrowingObject>();
             this.secondDisk = secondDisk.GetComponent<ThrowingObject>();
         }
 
         internal void ResetDisks()
         {
+            if (this.firstDisk == null || this.secondDisk == null) return;
+
             this.firstDisk.gameObject.SetActive(false);
             this.secondDisk.gameObject.SetActive(false);
             this.firstDisk.avaliableToBeAssinged = true;
             this.secondDisk.avaliableToBeAssinged = true;
-            this.firstDisk.thrown = true;
-            this.secondDisk.thrown = true;
+            this.firstDisk.SetThrown(true);
+            this.secondDisk.SetThrown(true);
             firstDisk = null;
             secondDisk = null;
         }
 
         public override void OnPlayerTriggerStay(VRCPlayerApi player)
         {
-            base.OnPlayerTriggerStay(player);
+            if (!player.isLocal) Destroy(this.gameObject);
 
-            ThrowingSystem ts = GameObject.Find("ThrowingSystem").GetComponent<ThrowingSystem>();
+            GameObject throwingSystem = GameObject.Find("ThrowingSystem");
+            ThrowingSystem ts = throwingSystem.GetComponent<ThrowingSystem>();
+
             if (ts != null)
             {
                 _player = player;
                 _isUserInVR = _player.IsUserInVR();
 
-                Initialize(ts.desktopRightInput, ts.desktopLeftInput, ts.vrRightInput, ts.vrLeftInput, ts.desktopLeftOffset, ts.desktopRightOffset, ts.FindAvaliableDisk(), ts.FindAvaliableDisk());
+                Initialize(ts.desktopRightInput, ts.desktopLeftInput, ts.vrRightInput, ts.vrLeftInput, ts.desktopLeftOffset, ts.desktopRightOffset, ts.spawnDisk(player), ts.spawnDisk(player));
 
-                firstDisk.gameObject.SetActive(true);
                 firstDisk.Initialize(_player, HumanBodyBones.LeftHand, desktopLeftOffset);
                 leftDisk = firstDisk;
-
-                secondDisk.gameObject.SetActive(true);
+                
                 secondDisk.Initialize(_player, HumanBodyBones.RightHand, desktopRightOffset);
                 rightDisk = secondDisk;
 
                 leftHand = false;
                 rightHand = false;
-
 
                 GetComponent<BoxCollider>().enabled = false;
             }
@@ -101,98 +104,95 @@ namespace ThrowingSystem
 
         private void FixedUpdate()
         {
-            if (_player != null)
+            if (_player == null) return;
+            if (firstDisk == null || secondDisk == null) return;
+            
+            tData = _player.GetTrackingData(VRCPlayerApi.TrackingDataType.Head);
+
+            // Check for input when in player hand
+            if (_isUserInVR)
             {
-                tData = _player.GetTrackingData(VRCPlayerApi.TrackingDataType.Head);
-
-                if (firstDisk != null && secondDisk != null)
+                if (leftHand)
                 {
-                    // Check for input when in player hand
-                    if (_isUserInVR)
+                    CheckVRInput(vrThrowLeftInput, leftDisk);
+                    if (leftDisk.thrown) leftHand = false;
+                }
+                else
+                {
+                    if (Input.GetAxisRaw(vrThrowLeftInput) > 0.7 && rightHand)
                     {
-                        if (leftHand)
-                        {
-                            CheckVRInput(vrThrowLeftInput, leftDisk);
-                            if (leftDisk.thrown) leftHand = false;
-                        }
-                        else
-                        {
-                            if (Input.GetAxisRaw(vrThrowLeftInput) > 0.7 && rightHand)
-                            {
-                                rightDisk.hand = HumanBodyBones.LeftHand;
-                                rightDisk.desktopOffset = desktopLeftOffset;
-                                leftHand = true;
-                                rightHand = false;
-                                tempDisk = leftDisk;
-                                leftDisk = rightDisk;
-                                rightDisk = leftDisk;
-                            }
-                        }
-                        if (rightHand)
-                        {
-                            CheckVRInput(vrThrowRightInput, rightDisk);
-                            if (rightDisk.thrown) rightHand = false;
-                        }
-                        else
-                        {
-                            if (Input.GetAxisRaw(vrThrowRightInput) > 0.7 && leftHand)
-                            {
-                                leftDisk.hand = HumanBodyBones.RightHand;
-                                leftDisk.desktopOffset = desktopRightOffset;
-                                rightHand = true;
-                                leftHand = false;
-                                tempDisk = rightDisk;
-                                rightDisk = leftDisk;
-                                leftDisk = rightDisk;
-                            }
-                        }
+                        rightDisk.hand = HumanBodyBones.LeftHand;
+                        rightDisk.desktopOffset = desktopLeftOffset;
+                        leftHand = true;
+                        rightHand = false;
+                        tempDisk = leftDisk;
+                        leftDisk = rightDisk;
+                        rightDisk = leftDisk;
                     }
-                    else
+                }
+                if (rightHand)
+                {
+                    CheckVRInput(vrThrowRightInput, rightDisk);
+                    if (rightDisk.thrown) rightHand = false;
+                }
+                else
+                {
+                    if (Input.GetAxisRaw(vrThrowRightInput) > 0.7 && leftHand)
                     {
-                        if (leftHand)
-                        {
-                            CheckDesktopInput(desktopLeftThrow, leftDisk, tData);
-                            if (leftDisk.thrown) leftHand = false;
-                        }
-                        else
-                        {
-                            if (Input.GetKey(desktopLeftThrow) && rightHand)
-                            {
-                                rightDisk.hand = HumanBodyBones.LeftHand;
-                                rightDisk.desktopOffset = desktopLeftOffset;
-                                leftHand = true;
-                                rightHand = false;
-                                tempDisk = leftDisk;
-                                leftDisk = rightDisk;
-                                rightDisk = leftDisk;
-                            }
-                        }
-                        if (rightHand)
-                        {
-                            CheckDesktopInput(desktopRightThrow, rightDisk, tData);
-                            if (rightDisk.thrown) rightHand = false;
-                        }
-                        else
-                        {
-                            if (Input.GetKey(desktopRightThrow) && leftHand)
-                            {
-                                leftDisk.hand = HumanBodyBones.RightHand;
-                                leftDisk.desktopOffset = desktopRightOffset;
-                                rightHand = true;
-                                leftHand = false;
-                                tempDisk = rightDisk;
-                                rightDisk = leftDisk;
-                                leftDisk = rightDisk;
-                            }
-                        }
+                        leftDisk.hand = HumanBodyBones.RightHand;
+                        leftDisk.desktopOffset = desktopRightOffset;
+                        rightHand = true;
+                        leftHand = false;
+                        tempDisk = rightDisk;
+                        rightDisk = leftDisk;
+                        leftDisk = rightDisk;
                     }
-
-                    // Return to hands
-                    tData = _player.GetTrackingData(VRCPlayerApi.TrackingDataType.Head);
-                    ReturnDisk(firstDisk, tData);
-                    ReturnDisk(secondDisk, tData);
                 }
             }
+            else
+            {
+                if (leftHand)
+                {
+                    CheckDesktopInput(desktopLeftThrow, leftDisk, tData);
+                    if (leftDisk.thrown) leftHand = false;
+                }
+                else
+                {
+                    if (Input.GetKey(desktopLeftThrow) && rightHand)
+                    {
+                        rightDisk.hand = HumanBodyBones.LeftHand;
+                        rightDisk.desktopOffset = desktopLeftOffset;
+                        leftHand = true;
+                        rightHand = false;
+                        tempDisk = leftDisk;
+                        leftDisk = rightDisk;
+                        rightDisk = leftDisk;
+                    }
+                }
+                if (rightHand)
+                {
+                    CheckDesktopInput(desktopRightThrow, rightDisk, tData);
+                    if (rightDisk.thrown) rightHand = false;
+                }
+                else
+                {
+                    if (Input.GetKey(desktopRightThrow) && leftHand)
+                    {
+                        leftDisk.hand = HumanBodyBones.RightHand;
+                        leftDisk.desktopOffset = desktopRightOffset;
+                        rightHand = true;
+                        leftHand = false;
+                        tempDisk = rightDisk;
+                        rightDisk = leftDisk;
+                        leftDisk = rightDisk;
+                    }
+                }
+            }
+
+            // Return to hands
+            tData = _player.GetTrackingData(VRCPlayerApi.TrackingDataType.Head);
+            ReturnDisk(firstDisk, tData);
+            ReturnDisk(secondDisk, tData);
         }
 
         private void CheckVRInput(string _vrThrowInput, ThrowingObject disk)
@@ -202,65 +202,61 @@ namespace ThrowingSystem
             {
                 if (disk._handSpeed.magnitude > handSpeedThreshold && disk.grabbed)
                 {
-                    disk.GuardVR(false);
-                    disk._blocking = false;
-                    disk.ThrowVR();
+                    disk.Guard(false);
+                    disk.Throw(new VRCPlayerApi.TrackingData());
                 }
                 disk.grabbed = false;
             }
             else if (Input.GetAxisRaw(_vrThrowInput) > 0.7)
             {
-                disk.GuardVR(true);
-                disk._blocking = true;
+                disk.Guard(true);
                 disk.grabbed = true;
             }
             else if (Input.GetAxisRaw(_vrThrowInput) <= buttonReleaseThreshold)
             {
                 if ((disk._handSpeed.magnitude > handSpeedThreshold || disk._localPlayer.GetVelocity().magnitude > playerSpeedThreshold) && disk.grabbed)
                 {
-                    disk.GuardVR(false);
-                    disk._blocking = false;
-                    disk.ThrowVR();
+                    disk.Guard(false);
+                    disk.Throw(new VRCPlayerApi.TrackingData());
                 }
                 else if (autoBlock)
                 {
-                    disk.GuardVR(true);
-                    disk._blocking = true;
+                    disk.Guard(true);
                 }
                 else
                 {
-                    disk.GuardVR(false);
-                    disk._blocking = false;
+                    disk.Guard(false);
                 }
                 disk.grabbed = false;
             }
+
+            disk.RequestSerialization();
         }
 
         private void CheckDesktopInput(KeyCode desktopThrow, ThrowingObject disk, VRCPlayerApi.TrackingData tData)
         {
-
             if (Input.GetKeyUp(desktopThrow))
             {
-                disk.GuardDesktop(false);
-                disk.ThrowDesktop(tData);
+                disk.Guard(false);
+                disk.Throw(tData);
             }
             else if (Input.GetKey(desktopThrow))
             {
-                disk.GuardDesktop(true);
+                disk.Guard(true);
             }
             else if (autoBlock)
             {
-                disk.GuardDesktop(true);
+                disk.Guard(true);
             }
             else
             {
-                disk.GuardDesktop(false);
+                disk.Guard(false);
             }
         }
 
         private void ReturnDisk(ThrowingObject disk, VRCPlayerApi.TrackingData tData)
         {
-            if (disk.IsReturning())
+            if (disk.IsReturning() && _player != null)
             {
                 if (!leftHand && disk.thrown)
                 {
@@ -273,32 +269,35 @@ namespace ThrowingSystem
                     disk.desktopOffset = desktopRightOffset;
                 }
 
-                Vector3 origin = Vector3.zero;
+                disk.returnOrigin = Vector3.zero;
                 if (_isUserInVR)
                 {
-                    origin = _player.GetBonePosition(disk.hand);
+                    disk.returnOrigin = _player.GetBonePosition(disk.hand);
                 }
-                else
+                else if(_player != null)
                 {
-                    origin = _player.GetBonePosition(HumanBodyBones.Head) + (tData.rotation * disk.desktopOffset);
+                    disk.returnOrigin = _player.GetBonePosition(HumanBodyBones.Head) + (tData.rotation * disk.desktopOffset);
                 }
 
-                disk.ReturnObjectToHand(origin);
+                disk.ReturnObjectToHand(disk.returnOrigin);
 
-                if (Vector3.Distance(disk.gameObject.transform.position, origin) == 0f && disk.thrown)
+                if (Vector3.Distance(disk.gameObject.transform.position, disk.returnOrigin) < 0.1f && disk.thrown)
                 {
-                    disk.thrown = false;
+                    disk.SetThrown(false);
                     disk.GetComponent<SphereCollider>().isTrigger = true;
+                    disk.returnMultiplier = 200f;
 
                     if (disk.hand == HumanBodyBones.LeftHand)
                     {
                         leftHand = true;
                         leftDisk = disk;
+                        _player.PlayHapticEventInHand(VRC_Pickup.PickupHand.Left, hapticDuration, hapticAmplitude, hapticFrequency);
                     }
                     if (disk.hand == HumanBodyBones.RightHand)
                     {
                         rightHand = true;
                         rightDisk = disk;
+                        _player.PlayHapticEventInHand(VRC_Pickup.PickupHand.Right, hapticDuration, hapticAmplitude, hapticFrequency);
                     }
                 }
             }

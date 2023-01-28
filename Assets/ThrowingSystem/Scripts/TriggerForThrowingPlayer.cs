@@ -12,9 +12,13 @@ namespace ThrowingSystem {
 
         public override void OnPlayerTriggerEnter(VRCPlayerApi player)
         {
-            ThrowingPlayer tP = Instantiate(throwingPlayerPrefab, transform.position, Quaternion.identity, throwingPlayers).GetComponent<ThrowingPlayer>();
-            Networking.SetOwner(player, tP.gameObject);
-            gameObject.SetActive(false);
+            Networking.SetOwner(player, this.gameObject);
+            if (player == Networking.LocalPlayer)
+            {
+                ThrowingPlayer tP = Instantiate(throwingPlayerPrefab, transform.position, Quaternion.identity, throwingPlayers).GetComponent<ThrowingPlayer>();
+                Networking.SetOwner(player, tP.gameObject);
+                gameObject.SetActive(false);
+            }
         }
     }
 }
