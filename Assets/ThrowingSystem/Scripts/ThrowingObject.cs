@@ -19,10 +19,13 @@ namespace ThrowingSystem
         [Header("General Settings")]
         [SerializeField] [UdonSynced] private float returnTimeSeconds;
         [SerializeField] private float gravityMultiplier;
-        [SerializeField] public float returnMultiplier;
+        [SerializeField] private float returnMultiplier;
         [SerializeField] private float distanceThreshold;
         [SerializeField] private float diskSpeedLimit;
-        [SerializeField] [UdonSynced] public bool thrown;
+        [SerializeField] [UdonSynced] private bool thrown;
+
+        public float ReturnMultiplier { get { return returnMultiplier; } set { returnMultiplier = value; } }
+        public bool Thrown { get { return thrown; } set { thrown = value; } }
 
         [Header("Desktop Settings")]
         [SerializeField] private float desktopThrowMultiplyer;
@@ -32,40 +35,43 @@ namespace ThrowingSystem
         [SerializeField] private float vrThrowMultiplyer;
 
         [Header("Avaliability")]
-        [SerializeField] [UdonSynced] public bool avaliableToBeAssinged;
-        [SerializeField] [UdonSynced] public bool grabbed;
+        [SerializeField] [UdonSynced] private bool avaliableToBeAssinged;
+        [SerializeField] [UdonSynced] private bool grabbed;
+
+        public bool AvaliableToBeAssinged { get { return avaliableToBeAssinged; } set { avaliableToBeAssinged = value; } }
+        public bool Grabbed { get { return grabbed; } set { grabbed = value; } }
 
         [Header("Visibility")]
         [SerializeField] private Material thrownMat;
         [SerializeField] private Material returnMat;
 
-        [Header("Hide")]
-        public HumanBodyBones hand;
-        public Vector3 _handSpeed;
-        [UdonSynced] public bool _blocking;
-        public Vector3 desktopOffset;
-        public VRCPlayerApi _localPlayer;
+        [UdonSynced] private bool _blocking;
+        private VRCPlayerApi _localPlayer;
+
+        public HumanBodyBones hand { get; set; }
+        public Vector3 _handSpeed { get; set; }
+        public Vector3 desktopOffset { get; set; }
 
         [UdonSynced] private bool _isUserInVR;
         private Vector3 _previousHandPos;
 
         #region BulletDrop
-        [UdonSynced] public float elapsedTime = 0;
+        [UdonSynced] private float elapsedTime = 0;
         private int predictionStepsPerFrame = 6;
-        [UdonSynced] public Vector3 diskVelocity = Vector3.zero;
+        [UdonSynced] private Vector3 diskVelocity = Vector3.zero;
         #endregion
 
         #region Syncing
         [UdonSynced] private Vector3 nextPoint = Vector3.zero;
         private Vector3 updatePoint = Vector3.zero;
 
-        [UdonSynced] public Vector3 returnOrigin = Vector3.zero;
-        [UdonSynced] public Vector3 vrDiskRotation = Vector3.zero;
+        [UdonSynced] private Vector3 returnOrigin = Vector3.zero;
+        [UdonSynced] private Vector3 vrDiskRotation = Vector3.zero;
         #endregion
 
         #region Cache
-        [UdonSynced] Vector3 _relPoint = Vector3.zero;
-        [UdonSynced] Vector3 handPos = Vector3.zero;
+        [UdonSynced] private Vector3 _relPoint = Vector3.zero;
+        [UdonSynced] private Vector3 handPos = Vector3.zero;
         #endregion
 
         public void Initialize(VRCPlayerApi localPlayer, HumanBodyBones hand, Vector3 desktopOffset)
@@ -75,7 +81,7 @@ namespace ThrowingSystem
             this.hand = hand;
             _isUserInVR = localPlayer.IsUserInVR();
 
-            thrown = true;
+            Thrown = true;
             _blocking = false;
             elapsedTime = returnTimeSeconds + 0.01f;
 
@@ -87,13 +93,13 @@ namespace ThrowingSystem
         {
             if (_localPlayer != null && _localPlayer.IsOwner(this.gameObject))
             {
-                if (thrown && elapsedTime <= returnTimeSeconds)
+                if (Thrown && elapsedTime <= returnTimeSeconds)
                 {
                     ThrowingPhysics();
                 }
 
                 // Check for input when in player hand and calculate current arm speed
-                if (!thrown && _isUserInVR)
+                if (!Thrown && _isUserInVR)
                 {
                     CalculateArmSpeed();
                 }
@@ -115,7 +121,7 @@ namespace ThrowingSystem
                 updatePoint = nextPoint;
             }
 
-            if (_isUserInVR && _blocking && !thrown)
+            if (_isUserInVR && _blocking && !Thrown)
             {
                 transform.rotation = Quaternion.Euler(vrDiskRotation);
             }
@@ -129,14 +135,7 @@ namespace ThrowingSystem
 
             if (!Networking.IsOwner(gameObject))
             {
-                if (!thrown)
-                {
-                    this.GetComponent<MeshRenderer>().material = thrownMat;
-                }
-                else
-                {
-                    this.GetComponent<MeshRenderer>().material = returnMat;
-                }
+                this.GetComponent<MeshRenderer>().material = !Thrown ? thrownMat : returnMat;
             }
         }
 
@@ -215,13 +214,13 @@ namespace ThrowingSystem
 
         public void ReturnObjectToHand(Vector3 origin)
         {
+            returnOrigin = origin;
             float _distance = Vector3.Distance(transform.position, origin);
-            float _returnSpeed = _distance / returnMultiplier;
+            float _returnSpeed = _distance / ReturnMultiplier;
             GetComponent<Rigidbody>().velocity = Vector3.zero;
 
             if (_distance >= distanceThreshold)
             {
-                GetComponent<SphereCollider>().isTrigger = true;
                 transform.SetPositionAndRotation(origin, Quaternion.identity);
                 nextPoint = origin;
             }
@@ -238,7 +237,7 @@ namespace ThrowingSystem
         {
             GetComponent<Rigidbody>().velocity = Vector3.zero;
             float _distance = Vector3.Distance(transform.position, origin);
-            float _returnSpeed = _distance / returnMultiplier;
+            float _returnSpeed = _distance / ReturnMultiplier;
             transform.position = Vector3.Lerp(transform.position, origin, Time.deltaTime / _returnSpeed);
         }
 
@@ -267,9 +266,9 @@ namespace ThrowingSystem
 
             if (diskVelocity.magnitude > diskSpeedLimit) this.diskVelocity = diskVelocity.normalized * diskSpeedLimit;
 
-            thrown = true;
+            Thrown = true;
             elapsedTime = 0f;
-            returnMultiplier = 20f;
+            ReturnMultiplier = 20f;
             RequestSerialization();
         }
 
@@ -302,12 +301,14 @@ namespace ThrowingSystem
 
         public void ResetDisk()
         {
-            avaliableToBeAssinged = false;
+            thrown = true;
+            AvaliableToBeAssinged = true;
+            gameObject.SetActive(false);
         }
 
         public void SetThrown(bool thrown)
         {
-            this.thrown = thrown;
+            this.Thrown = thrown;
             RequestSerialization();
         }
     }
