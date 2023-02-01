@@ -321,35 +321,19 @@ MonoBehaviour:
     Prefab: {fileID: 0}
     PrefabModificationsReferencedUnityObjects: []
     PrefabModifications: []
-    SerializationNodes:
-    - Name: _localPlayer
-      Entry: 6
-      Data: 
+    SerializationNodes: []
   _udonSharpBackingUdonBehaviour: {fileID: 8319560344544458068}
   arenaCollider: {fileID: 0}
   guardObject: {fileID: 6123364274614358525}
   returnTimeSeconds: 5
-  gravityMultiplier: 0.1
-  returnMultiplier: 20
+  gravityMultiplier: 0.001
+  returnMultiplierAirborne: 10
+  returnMultiplierInHand: 10
   distanceThreshold: 20
-  diskSpeedLimit: 30
-  autoBlock: 1
-  thrown: 1
-  desktopThrowMultiplyer: 20
-  playerSpeedMultiplyer: 1.5
-  vrThrowMultiplyer: 3
-  avaliableToBeAssinged: 1
-  grabbed: 0
+  diskSpeedLimit: 20
+  airborne: 1
   thrownMat: {fileID: 2100000, guid: b6099d83d6f02e34ea589e768df4173b, type: 2}
   returnMat: {fileID: 2100000, guid: 80a973c9fbdffad4d82d94b21d89dc95, type: 2}
-  hand: 0
-  _handSpeed: {x: 0, y: 0, z: 0}
-  _blocking: 0
-  desktopOffset: {x: 0, y: 0, z: 0}
-  elapsedTime: 0
-  diskVelocity: {x: 0, y: 0, z: 0}
-  nextPoint: {x: 0, y: 0, z: 0}
-  updatePoint: {x: 0, y: 0, z: 0}
 --- !u!114 &8319560344544458068
 MonoBehaviour:
   m_ObjectHideFlags: 0

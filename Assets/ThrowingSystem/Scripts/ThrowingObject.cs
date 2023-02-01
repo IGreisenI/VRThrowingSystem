@@ -19,124 +19,87 @@ namespace ThrowingSystem
         [Header("General Settings")]
         [SerializeField] [UdonSynced] private float returnTimeSeconds;
         [SerializeField] private float gravityMultiplier;
-        [SerializeField] private float returnMultiplier;
+        [SerializeField] private float returnMultiplierAirborne;
+        [SerializeField] private float returnMultiplierInHand;
         [SerializeField] private float distanceThreshold;
         [SerializeField] private float diskSpeedLimit;
-        [SerializeField] [UdonSynced] private bool thrown;
 
-        public float ReturnMultiplier { get { return returnMultiplier; } set { returnMultiplier = value; } }
-        public bool Thrown { get { return thrown; } set { thrown = value; } }
-
-        [Header("Desktop Settings")]
-        [SerializeField] private float desktopThrowMultiplyer;
-
-        [Header("VR Settings")]
-        [SerializeField] private float playerSpeedMultiplyer;
-        [SerializeField] private float vrThrowMultiplyer;
-
-        [Header("Avaliability")]
-        [SerializeField] [UdonSynced] private bool avaliableToBeAssinged;
-        [SerializeField] [UdonSynced] private bool grabbed;
-
-        public bool AvaliableToBeAssinged { get { return avaliableToBeAssinged; } set { avaliableToBeAssinged = value; } }
-        public bool Grabbed { get { return grabbed; } set { grabbed = value; } }
+        [SerializeField] [UdonSynced] private bool airborne = true;
+        public bool Airborne { get { return airborne; } set { airborne = value; } }
 
         [Header("Visibility")]
         [SerializeField] private Material thrownMat;
         [SerializeField] private Material returnMat;
 
-        [UdonSynced] private bool _blocking;
+        [UdonSynced] private bool _blocking = false;
         private VRCPlayerApi _localPlayer;
-
-        public HumanBodyBones hand { get; set; }
-        public Vector3 _handSpeed { get; set; }
-        public Vector3 desktopOffset { get; set; }
+        private HumanBodyBones hand;
 
         [UdonSynced] private bool _isUserInVR;
-        private Vector3 _previousHandPos;
 
         #region BulletDrop
-        [UdonSynced] private float elapsedTime = 0;
+        [UdonSynced] private float airBounceTime = 0;
         private int predictionStepsPerFrame = 6;
-        [UdonSynced] private Vector3 diskVelocity = Vector3.zero;
+        private float stepSize;
+        private float returnMultiplier;
+        [UdonSynced] private Vector3 diskVelocity = Vector3.zero; 
         #endregion
 
         #region Syncing
         [UdonSynced] private Vector3 nextPoint = Vector3.zero;
-        private Vector3 updatePoint = Vector3.zero;
-
         [UdonSynced] private Vector3 returnOrigin = Vector3.zero;
-        [UdonSynced] private Vector3 vrDiskRotation = Vector3.zero;
+        [UdonSynced] private Vector3 diskRotation = Vector3.zero;
         #endregion
 
-        #region Cache
-        [UdonSynced] private Vector3 _relPoint = Vector3.zero;
-        [UdonSynced] private Vector3 handPos = Vector3.zero;
-        #endregion
-
-        public void Initialize(VRCPlayerApi localPlayer, HumanBodyBones hand, Vector3 desktopOffset)
+        public ThrowingObject Initialize(VRCPlayerApi localPlayer, HumanBodyBones hand)
         {
             _localPlayer = localPlayer;
 
             this.hand = hand;
             _isUserInVR = localPlayer.IsUserInVR();
+            stepSize = 1f / predictionStepsPerFrame;
+            airBounceTime = returnTimeSeconds + 0.01f;
+            returnMultiplier = returnMultiplierAirborne;
 
-            Thrown = true;
-            _blocking = false;
-            elapsedTime = returnTimeSeconds + 0.01f;
-
-            this.desktopOffset = desktopOffset;
             RequestSerialization();
+            return this;
         }
 
         private void FixedUpdate()
         {
             if (_localPlayer != null && _localPlayer.IsOwner(this.gameObject))
             {
-                if (Thrown && elapsedTime <= returnTimeSeconds)
+                if (Airborne && !IsReturning())
                 {
                     ThrowingPhysics();
                 }
-
-                // Check for input when in player hand and calculate current arm speed
-                if (!Thrown && _isUserInVR)
-                {
-                    CalculateArmSpeed();
-                }
             }
+            // Ran by remote players
             else if (!IsReturning())
             {
-                InterpolateDiskThrow(updatePoint);
+                ThrowingPhysics();
             }
-            else if (IsReturning())
+            else
             {
                 InterpolateReturn(returnOrigin);
             }
         }
         
         public override void OnDeserialization()
-        {
-            if(this.transform.position != nextPoint)
+        {/*
+            if (_isUserInVR && _blocking && !Airborne)
             {
-                updatePoint = nextPoint;
-            }
-
-            if (_isUserInVR && _blocking && !Thrown)
-            {
-                transform.rotation = Quaternion.Euler(vrDiskRotation);
+                transform.rotation = Quaternion.Euler(diskRotation); // TODO: Should be set in hand.
             }
             else
             {
                 transform.rotation = Quaternion.identity;
-            }
+            }*/
+            transform.rotation = Quaternion.Euler(diskRotation);
 
             guardObject.SetActive(_blocking);
 
-
-            if (!Networking.IsOwner(gameObject))
-            {
-                this.GetComponent<MeshRenderer>().material = !Thrown ? thrownMat : returnMat;
-            }
+            this.GetComponent<MeshRenderer>().material = !Airborne ? thrownMat : returnMat;
         }
 
         private void RaycastForBounce(Vector3 position, Vector3 direction, float stepDistance)
@@ -157,27 +120,25 @@ namespace ThrowingSystem
         public void ThrowingPhysics()
         {
             Vector3 currPoint = this.transform.position;
-            float stepSize = 1f / predictionStepsPerFrame;
-            for (float step = 0; step < 1; step += stepSize)
+            for (float step = 0f; step < 1f; step += stepSize)
             {
                 diskVelocity += Physics.gravity * gravityMultiplier * stepSize * Time.deltaTime;
 
-                Vector3 directionNorm = ((currPoint + diskVelocity * stepSize * Time.deltaTime) - currPoint).normalized;
-                RaycastForBounce(currPoint, directionNorm, stepSize);
+                RaycastForBounce(currPoint, diskVelocity.normalized, stepSize);
 
-                nextPoint = currPoint + diskVelocity * stepSize * Time.deltaTime;
+                nextPoint = currPoint + diskVelocity;
 
                 // In case that the disk is out of bounds it gets placed in bounced and into play
                 if (!arenaCollider.bounds.Contains(nextPoint))
                 {
                     diskVelocity = Vector3.Reflect(diskVelocity, (arenaCollider.ClosestPointOnBounds(nextPoint) - nextPoint).normalized);
 
-                    nextPoint = arenaCollider.ClosestPointOnBounds(nextPoint) + diskVelocity * stepSize * Time.deltaTime;
+                    nextPoint = arenaCollider.ClosestPointOnBounds(nextPoint) + diskVelocity;
                 }
 
                 currPoint = nextPoint;
             }
-            elapsedTime += Time.deltaTime;
+            airBounceTime += Time.deltaTime;
             
             RequestSerialization();
 
@@ -207,109 +168,111 @@ namespace ThrowingSystem
 
                 currPoint = updatePoint;
             }
-            elapsedTime += Time.deltaTime;
+            airBounceTime += Time.deltaTime;
 
             this.transform.position = updatePoint;
         }
 
-        public void ReturnObjectToHand(Vector3 origin)
+        /// <summary>
+        /// Moves the object closer to the hand, if object has reached the hand it returns true as there are no events in Udon
+        /// </summary>
+        /// <param name="origin"></param>
+        /// <param name="hand"></param>
+        /// <returns></returns>
+        public bool ReturnObjectToHand(Vector3 origin, HumanBodyBones hand)
         {
             returnOrigin = origin;
-            float _distance = Vector3.Distance(transform.position, origin);
-            float _returnSpeed = _distance / ReturnMultiplier;
-            GetComponent<Rigidbody>().velocity = Vector3.zero;
 
-            if (_distance >= distanceThreshold)
-            {
-                transform.SetPositionAndRotation(origin, Quaternion.identity);
-                nextPoint = origin;
-            }
-            else if(_distance > 0)
-            {
-                nextPoint = Vector3.Lerp(transform.position, origin, Time.deltaTime / _returnSpeed);
-            }
+            InterpolateReturn(returnOrigin);
 
             RequestSerialization();
             this.transform.position = nextPoint;
-        }
 
-        public void InterpolateReturn(Vector3 origin)
-        {
-            GetComponent<Rigidbody>().velocity = Vector3.zero;
-            float _distance = Vector3.Distance(transform.position, origin);
-            float _returnSpeed = _distance / ReturnMultiplier;
-            transform.position = Vector3.Lerp(transform.position, origin, Time.deltaTime / _returnSpeed);
-        }
-
-        private void CalculateArmSpeed()
-        {
-            _relPoint = _localPlayer.GetBonePosition(hand) - _localPlayer.GetPosition();
-            handPos = new Vector3(Vector3.Dot(_relPoint, transform.right), Vector3.Dot(_relPoint, transform.up), Vector3.Dot(_relPoint, transform.forward));
-
-            _handSpeed = (_relPoint * 1000 - _previousHandPos * 1000);
-
-            _previousHandPos = _relPoint;
-        }
-
-        public void Throw(VRCPlayerApi.TrackingData tData)
-        {
-            if (_isUserInVR)
+            // Check if object has returned to the origin, if so then 
+            if (Vector3.Distance(transform.position, returnOrigin) < 0.1f && Airborne)
             {
-                diskVelocity = _localPlayer.GetVelocity() * playerSpeedMultiplyer + _handSpeed * vrThrowMultiplyer;
+                OnReturnToHand();
+                if(this.hand == hand)
+                    return this.hand == hand;
             }
-            else
-            {
-                diskVelocity = tData.rotation * Vector3.forward * desktopThrowMultiplyer;
-            }
+            return false;
+        }
 
+        public void InterpolateReturn(Vector3 target)
+        {
+            float _distance = Vector3.Distance(transform.position, target);
+            float _returnSpeed = _distance / returnMultiplier;
+
+            if (_distance >= distanceThreshold)
+            {
+                transform.SetPositionAndRotation(target, Quaternion.identity);
+                nextPoint = target;
+            }
+            else if (_distance > 0)
+            {
+                nextPoint = Vector3.Lerp(transform.position, target, Time.deltaTime / _returnSpeed);
+            }
+        }
+
+        public void Throw(Vector3 velocity)
+        {
+            diskVelocity = Vector3.ClampMagnitude(velocity, diskSpeedLimit);
             transform.rotation = new Quaternion();
 
-            if (diskVelocity.magnitude > diskSpeedLimit) this.diskVelocity = diskVelocity.normalized * diskSpeedLimit;
+            Block(false);
+            Airborne = true;
+            airBounceTime = 0f;
+            returnMultiplier = returnMultiplierAirborne;
 
-            Thrown = true;
-            elapsedTime = 0f;
-            ReturnMultiplier = 20f;
             RequestSerialization();
         }
 
-        public void Guard(bool isGuarding)
+        public void Block(bool isGuarding)
         {
             _blocking = isGuarding;
             transform.rotation = Quaternion.identity;
 
-            if (isGuarding)
+            if (_blocking && _isUserInVR)
             {
-                if (_isUserInVR)
-                {
-                    var handRotation = _localPlayer.GetBoneRotation(hand);
-                    vrDiskRotation = handRotation.eulerAngles;
-                    transform.rotation = handRotation;
-                }
+                SetRotation(_localPlayer.GetBoneRotation(hand));
             }
+
             guardObject.SetActive(isGuarding);
         }
 
         public bool IsReturning()
         {
-            return elapsedTime > returnTimeSeconds;
+            return airBounceTime > returnTimeSeconds;
         }
 
-        public VRCPlayerApi GetPlayer()
+        public void SetRotation(Quaternion handRotation)
         {
-            return _localPlayer;
+            diskRotation = handRotation.eulerAngles;
+            transform.rotation = handRotation;
+            RequestSerialization();
         }
 
         public void ResetDisk()
         {
-            thrown = true;
-            AvaliableToBeAssinged = true;
+            airborne = true;
             gameObject.SetActive(false);
         }
 
         public void SetThrown(bool thrown)
         {
-            this.Thrown = thrown;
+            this.Airborne = thrown;
             RequestSerialization();
+        }
+
+        public void SetHand(HumanBodyBones hand)
+        {
+            this.hand = hand;
+        }
+
+        public void OnReturnToHand()
+        {
+            returnMultiplier = returnMultiplierInHand;
+            SetThrown(false);
         }
     }
 }
