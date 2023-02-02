@@ -130,7 +130,7 @@ namespace ThrowingSystem
 
         public bool CheckSwapingDisks(PlayerHand otherHand)
         {
-            return Input.GetKey(desktopInput) || Input.GetAxisRaw(vrInput) > 0.7 && otherHand.occupied;
+            return (Input.GetKey(desktopInput) || Input.GetAxisRaw(vrInput) > 0.7) && otherHand.occupied;
         }
 
         private void SwapDisk(PlayerHand otherHand)
@@ -143,7 +143,6 @@ namespace ThrowingSystem
 
             occupied = true;
             otherHand.occupied = false;
-
         }
 
         private void CheckDesktopInput(VRCPlayerApi.TrackingData headTrackingData, bool autoBlock)

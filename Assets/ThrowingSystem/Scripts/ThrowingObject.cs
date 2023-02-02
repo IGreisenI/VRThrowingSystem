@@ -38,14 +38,13 @@ namespace ThrowingSystem
         #region BulletDrop
         [UdonSynced] private float airBounceTime = 0;
         private int predictionStepsPerFrame = 6;
-        private float stepSize;
+        private float stepSize { get { return 1f / predictionStepsPerFrame; } }
         [UdonSynced] private float returnMultiplier;
         [UdonSynced] private Vector3 diskVelocity = Vector3.zero; 
         #endregion
 
         #region Syncing
-        [UdonSynced] private Vector3 nextPoint = Vector3.zero; 
-        private Vector3 nextPointClient = Vector3.zero;
+        [UdonSynced] private Vector3 nextPoint = Vector3.zero;
         [UdonSynced] private Vector3 returnOrigin = Vector3.zero;
         [UdonSynced] private Vector3 diskRotation = Vector3.zero;
         #endregion
@@ -55,7 +54,6 @@ namespace ThrowingSystem
             _localPlayer = localPlayer;
 
             this.hand = hand;
-            stepSize = 1f / predictionStepsPerFrame;
             airBounceTime = returnTimeSeconds + 0.01f;
             returnMultiplier = returnMultiplierAirborne;
 
@@ -69,13 +67,13 @@ namespace ThrowingSystem
             {
                 if (Airborne && !IsReturning())
                 {
-                    ThrowingPhysics(out nextPoint);
+                    ThrowingPhysics();
                 }
             }
             // Ran by remote players
             else if (!IsReturning())
             {
-                ThrowingPhysics(out nextPointClient);
+                ThrowingPhysics();
             }
             else
             {
@@ -85,8 +83,6 @@ namespace ThrowingSystem
         
         public override void OnDeserialization()
         {
-            nextPointClient = nextPoint;
-
             transform.rotation = Quaternion.Euler(diskRotation);
 
             guardObject.SetActive(_blocking);
@@ -112,7 +108,6 @@ namespace ThrowingSystem
         public void ThrowingPhysics()
         {
             Vector3 currPoint = this.transform.position;
-
             for (float step = 0f; step < 1f; step += stepSize)
             {
                 diskVelocity += Physics.gravity * gravityMultiplier * stepSize * Time.deltaTime;
@@ -132,38 +127,10 @@ namespace ThrowingSystem
                 currPoint = nextPoint;
             }
             airBounceTime += Time.deltaTime;
-            
+
             RequestSerialization();
 
             this.transform.position = nextPoint;
-        }
-
-        public void InterpolateDiskThrow(Vector3 updatePoint)
-        {
-            Vector3 currPoint = this.transform.position;
-
-            for (float step = 0; step < 1; step += stepSize)
-            {
-                diskVelocity += Physics.gravity * gravityMultiplier * stepSize * Time.deltaTime;
-
-                Vector3 directionNorm = ((currPoint + diskVelocity * stepSize * Time.deltaTime) - currPoint).normalized;
-                RaycastForBounce(currPoint, directionNorm, stepSize);
-
-                updatePoint = currPoint + diskVelocity * stepSize * Time.deltaTime;
-
-                // In case that the disk is out of bounds it gets placed in bounced and into play
-                if (!arenaCollider.bounds.Contains(updatePoint))
-                {
-                    diskVelocity = Vector3.Reflect(diskVelocity, (arenaCollider.ClosestPointOnBounds(updatePoint) - updatePoint).normalized);
-
-                    updatePoint = arenaCollider.ClosestPointOnBounds(updatePoint) + diskVelocity * stepSize * Time.deltaTime;
-                }
-
-                currPoint = updatePoint;
-            }
-            airBounceTime += Time.deltaTime;
-
-            this.transform.position = updatePoint;
         }
 
         /// <summary>
