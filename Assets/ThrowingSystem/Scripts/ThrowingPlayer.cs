@@ -59,8 +59,8 @@ namespace ThrowingSystem
                 ThrowingObject firstDisk = ts.spawnDisk(player).Initialize(_player, HumanBodyBones.LeftHand);
                 ThrowingObject secondDisk = ts.spawnDisk(player).Initialize(_player, HumanBodyBones.RightHand);
 
-                leftPlayerHand.Init(false, ts.desktopLeftOffset, firstDisk, HumanBodyBones.LeftHand, ts.desktopLeftInput, ts.vrLeftInput, handSpeedThreshold, buttonReleaseThreshold);
-                rightPlayerHand.Init(false, ts.desktopRightOffset, secondDisk, HumanBodyBones.RightHand, ts.desktopRightInput, ts.vrRightInput, handSpeedThreshold, buttonReleaseThreshold);
+                leftPlayerHand.Init(false, autoBlock, ts.desktopLeftOffset, firstDisk, HumanBodyBones.LeftHand, ts.desktopLeftInput, ts.vrLeftInput, handSpeedThreshold, buttonReleaseThreshold);
+                rightPlayerHand.Init(false, autoBlock, ts.desktopRightOffset, secondDisk, HumanBodyBones.RightHand, ts.desktopRightInput, ts.vrRightInput, handSpeedThreshold, buttonReleaseThreshold);
 
                 GetComponent<BoxCollider>().enabled = false;
             }
@@ -73,8 +73,8 @@ namespace ThrowingSystem
             
             headTrackingData = _player.GetTrackingData(VRCPlayerApi.TrackingDataType.Head);
 
-            leftPlayerHand.HandlePlayerInput(headTrackingData, rightPlayerHand, PlayerSpeedThresholdExceeded, _isUserInVR, autoBlock);
-            rightPlayerHand.HandlePlayerInput(headTrackingData, leftPlayerHand, PlayerSpeedThresholdExceeded, _isUserInVR, autoBlock);
+            leftPlayerHand.HandlePlayerInput(headTrackingData, rightPlayerHand, PlayerSpeedThresholdExceeded, _isUserInVR);
+            rightPlayerHand.HandlePlayerInput(headTrackingData, leftPlayerHand, PlayerSpeedThresholdExceeded, _isUserInVR);
 
             leftPlayerHand.ReturnDisk(_player, headTrackingData, hapticDuration, hapticAmplitude, hapticFrequency);
             rightPlayerHand.ReturnDisk(_player, headTrackingData, hapticDuration, hapticAmplitude, hapticFrequency);

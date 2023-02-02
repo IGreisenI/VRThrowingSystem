@@ -35,18 +35,17 @@ namespace ThrowingSystem
         private VRCPlayerApi _localPlayer;
         private HumanBodyBones hand;
 
-        [UdonSynced] private bool _isUserInVR;
-
         #region BulletDrop
         [UdonSynced] private float airBounceTime = 0;
         private int predictionStepsPerFrame = 6;
         private float stepSize;
-        private float returnMultiplier;
+        [UdonSynced] private float returnMultiplier;
         [UdonSynced] private Vector3 diskVelocity = Vector3.zero; 
         #endregion
 
         #region Syncing
-        [UdonSynced] private Vector3 nextPoint = Vector3.zero;
+        [UdonSynced] private Vector3 nextPoint = Vector3.zero; 
+        private Vector3 nextPointClient = Vector3.zero;
         [UdonSynced] private Vector3 returnOrigin = Vector3.zero;
         [UdonSynced] private Vector3 diskRotation = Vector3.zero;
         #endregion
@@ -56,7 +55,6 @@ namespace ThrowingSystem
             _localPlayer = localPlayer;
 
             this.hand = hand;
-            _isUserInVR = localPlayer.IsUserInVR();
             stepSize = 1f / predictionStepsPerFrame;
             airBounceTime = returnTimeSeconds + 0.01f;
             returnMultiplier = returnMultiplierAirborne;
@@ -71,13 +69,13 @@ namespace ThrowingSystem
             {
                 if (Airborne && !IsReturning())
                 {
-                    ThrowingPhysics();
+                    ThrowingPhysics(out nextPoint);
                 }
             }
             // Ran by remote players
             else if (!IsReturning())
             {
-                ThrowingPhysics();
+                ThrowingPhysics(out nextPointClient);
             }
             else
             {
@@ -86,15 +84,9 @@ namespace ThrowingSystem
         }
         
         public override void OnDeserialization()
-        {/*
-            if (_isUserInVR && _blocking && !Airborne)
-            {
-                transform.rotation = Quaternion.Euler(diskRotation); // TODO: Should be set in hand.
-            }
-            else
-            {
-                transform.rotation = Quaternion.identity;
-            }*/
+        {
+            nextPointClient = nextPoint;
+
             transform.rotation = Quaternion.Euler(diskRotation);
 
             guardObject.SetActive(_blocking);
@@ -120,6 +112,7 @@ namespace ThrowingSystem
         public void ThrowingPhysics()
         {
             Vector3 currPoint = this.transform.position;
+
             for (float step = 0f; step < 1f; step += stepSize)
             {
                 diskVelocity += Physics.gravity * gravityMultiplier * stepSize * Time.deltaTime;
@@ -148,7 +141,7 @@ namespace ThrowingSystem
         public void InterpolateDiskThrow(Vector3 updatePoint)
         {
             Vector3 currPoint = this.transform.position;
-            float stepSize = 1f / predictionStepsPerFrame;
+
             for (float step = 0; step < 1; step += stepSize)
             {
                 diskVelocity += Physics.gravity * gravityMultiplier * stepSize * Time.deltaTime;
@@ -186,7 +179,6 @@ namespace ThrowingSystem
             InterpolateReturn(returnOrigin);
 
             RequestSerialization();
-            this.transform.position = nextPoint;
 
             // Check if object has returned to the origin, if so then 
             if (Vector3.Distance(transform.position, returnOrigin) < 0.1f && Airborne)
@@ -212,6 +204,8 @@ namespace ThrowingSystem
             {
                 nextPoint = Vector3.Lerp(transform.position, target, Time.deltaTime / _returnSpeed);
             }
+
+            this.transform.position = nextPoint;
         }
 
         public void Throw(Vector3 velocity)
@@ -219,7 +213,7 @@ namespace ThrowingSystem
             diskVelocity = Vector3.ClampMagnitude(velocity, diskSpeedLimit);
             transform.rotation = new Quaternion();
 
-            Block(false);
+            SetBlocking(false);
             Airborne = true;
             airBounceTime = 0f;
             returnMultiplier = returnMultiplierAirborne;
@@ -227,17 +221,11 @@ namespace ThrowingSystem
             RequestSerialization();
         }
 
-        public void Block(bool isGuarding)
+        public void SetBlocking(bool isBlocking)
         {
-            _blocking = isGuarding;
-            transform.rotation = Quaternion.identity;
+            _blocking = isBlocking;
 
-            if (_blocking && _isUserInVR)
-            {
-                SetRotation(_localPlayer.GetBoneRotation(hand));
-            }
-
-            guardObject.SetActive(isGuarding);
+            guardObject.SetActive(isBlocking);
         }
 
         public bool IsReturning()

@@ -3,6 +3,7 @@ using UdonSharp;
 using UnityEngine;
 using VRC.SDK3.Components;
 using VRC.SDKBase;
+using VRC.Udon.Common;
 
 namespace ThrowingSystem
 {
@@ -21,7 +22,8 @@ namespace ThrowingSystem
         [SerializeField] private float playerSpeedMultiplyer;
         [SerializeField] private float vrThrowMultiplyer;
 
-        public bool occupied;
+        private bool occupied;
+        private bool autoBlock;
         private Vector3 desktopOffset;
         private ThrowingObject disk;
         private HumanBodyBones hand;
@@ -41,10 +43,11 @@ namespace ThrowingSystem
         private Vector3 _handPos = Vector3.zero;
         #endregion
 
-        public PlayerHand Init(bool occupied, Vector3 desktopOffset, ThrowingObject disk, HumanBodyBones hand, KeyCode desktopInput, string vrInput,
+        public PlayerHand Init(bool occupied, bool autoBlock, Vector3 desktopOffset, ThrowingObject disk, HumanBodyBones hand, KeyCode desktopInput, string vrInput,
                                 float handSpeedThreshold, float buttonReleaseThreshold)
         {
             this.occupied = occupied;
+            this.autoBlock = autoBlock;
             this.desktopOffset = desktopOffset;
             this.disk = disk;
             this.hand = hand;
@@ -52,6 +55,7 @@ namespace ThrowingSystem
             this.vrInput = vrInput;
             this.handSpeedThreshold = handSpeedThreshold;
             this.buttonReleaseThreshold = buttonReleaseThreshold;
+
             return this;
         }
 
@@ -72,7 +76,7 @@ namespace ThrowingSystem
             _previousHandOffset = _relativeHandOffset;
         }
 
-        public void HandlePlayerInput(VRCPlayerApi.TrackingData headTrackingData, PlayerHand otherHand, bool playerSpeedThresholdExceeded, bool isInVR, bool autoBlock)
+        public void HandlePlayerInput(VRCPlayerApi.TrackingData headTrackingData, PlayerHand otherHand, bool playerSpeedThresholdExceeded, bool isInVR)
         {
             if (occupied)
             {
@@ -84,7 +88,11 @@ namespace ThrowingSystem
                 }
                 else
                 {
-                    disk.Block(CheckBlocking(autoBlock));
+                    bool isBlocking = CheckBlocking();
+                    bool shouldRotate = isInVR && isBlocking;
+
+                    disk.SetRotation(shouldRotate ? Networking.LocalPlayer.GetBoneRotation(hand) : Quaternion.identity);
+                    disk.SetBlocking(isBlocking);
                 }
             }
             else 
@@ -106,7 +114,7 @@ namespace ThrowingSystem
             return false;
         }
 
-        public bool CheckBlocking(bool autoBlock)
+        public bool CheckBlocking()
         {
             if (Input.GetKey(desktopInput) || Input.GetAxisRaw(vrInput) > 0.7)
             {
@@ -146,11 +154,11 @@ namespace ThrowingSystem
             }
             else if (Input.GetKey(desktopInput))
             {
-                disk.Block(true);
+                disk.SetBlocking(true);
             }
             else
             {
-                disk.Block(autoBlock);
+                disk.SetBlocking(autoBlock);
             }
         }
 
@@ -171,7 +179,7 @@ namespace ThrowingSystem
             }
             else if (Input.GetAxisRaw(vrInput) > 0.7)
             {
-                disk.Block(true);
+                disk.SetBlocking(true);
                 grabbing = true;
             }
             else if (Input.GetAxisRaw(vrInput) <= buttonReleaseThreshold)
@@ -182,7 +190,7 @@ namespace ThrowingSystem
                 }
                 else
                 {
-                    disk.Block(autoBlock);
+                    disk.SetBlocking(autoBlock);
                 }
                 grabbing = false;
             }
