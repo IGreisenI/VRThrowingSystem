@@ -17,9 +17,13 @@ namespace ThrowingSystem
         [SerializeField] private float hapticAmplitude;
         [SerializeField] private float hapticFrequency;
 
+        [Header("Desktop Input Settings")]
+        [SerializeField] private float desktopPlayerSpeedThreshold;
+        [SerializeField] private float desktopHandSpeedThreshold;
+
         [Header("VR Input Settings")]
         [SerializeField] private float handSpeedThreshold;
-        [SerializeField] private float playerSpeedThreshold;
+        [SerializeField] private float vrPlayerSpeedThreshold;
         [Range(0.01f, 0.5f)]
         [SerializeField] private float buttonReleaseThreshold;
 
@@ -27,7 +31,7 @@ namespace ThrowingSystem
         [SerializeField] private PlayerHand leftPlayerHand;
         [SerializeField] private PlayerHand rightPlayerHand;
 
-        private bool PlayerSpeedThresholdExceeded { get { return _player.GetVelocity().magnitude > playerSpeedThreshold; } }
+        private bool PlayerSpeedThresholdExceeded { get { return _player.GetVelocity().magnitude > vrPlayerSpeedThreshold || _player.GetVelocity().magnitude > desktopPlayerSpeedThreshold; } }
 
         private VRCPlayerApi _player;
         private bool _isUserInVR;

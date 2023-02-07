@@ -1,5 +1,6 @@
 ﻿using System;
 using UdonSharp;
+using Unity.Collections;
 using UnityEngine;
 using VRC.SDK3.Components;
 using VRC.SDKBase;
@@ -7,19 +8,14 @@ using VRC.Udon.Common;
 
 namespace ThrowingSystem
 {
-    public struct InputData
-    {
-        bool thrown;
-        bool block;
-    }
-
     public class PlayerHand : UdonSharpBehaviour
     {
         [Header("Desktop Settings")]
+        [SerializeField] private float desktopPlayerSpeedMultiplyer;
         [SerializeField] private float desktopThrowMultiplyer;
 
         [Header("VR Settings")]
-        [SerializeField] private float playerSpeedMultiplyer;
+        [SerializeField] private float vrPlayerSpeedMultiplyer;
         [SerializeField] private float vrThrowMultiplyer;
 
         private bool occupied;
@@ -37,7 +33,7 @@ namespace ThrowingSystem
         private Vector3 _previousHandOffset;
 
         #region CACHE
-        private const float handSpeedCoefficient = 1000;
+        private const float handSpeedCoefficient = 1000f;
         private Vector3 returnPoint;
         private Vector3 _relativeHandOffset = Vector3.zero;
         private Vector3 _handPos = Vector3.zero;
@@ -106,7 +102,7 @@ namespace ThrowingSystem
 
         public bool CheckThrowing(bool playerSpeedThresholdExceeded)
         {
-            if (Input.GetKeyUp(desktopInput) || IsVrThrowInput(playerSpeedThresholdExceeded))
+            if (Input.GetKeyUp(desktopInput) && playerSpeedThresholdExceeded || IsVrThrowInput(playerSpeedThresholdExceeded))
             {
                 grabbing = false;
                 return true;
@@ -145,56 +141,6 @@ namespace ThrowingSystem
             otherHand.occupied = false;
         }
 
-        private void CheckDesktopInput(VRCPlayerApi.TrackingData headTrackingData, bool autoBlock)
-        {
-            if (Input.GetKeyUp(desktopInput))
-            {
-                disk.Throw(CalculateDesktopVelocity(headTrackingData));
-            }
-            else if (Input.GetKey(desktopInput))
-            {
-                disk.SetBlocking(true);
-            }
-            else
-            {
-                disk.SetBlocking(autoBlock);
-            }
-        }
-
-        /// <summary>
-        /// Checks VR input, order is important to know when the player is releasing the trigger, as we are using the old input system
-        /// </summary>
-        /// <param name="playerSpeedThresholdExceeded"></param>
-        /// <param name="autoBlock"></param>
-        private void CheckVRInput(bool playerSpeedThresholdExceeded, bool autoBlock)
-        {
-            if (Input.GetAxisRaw(vrInput) > buttonReleaseThreshold && Input.GetAxisRaw(vrInput) <= 0.7)
-            {
-                if (IsHandMovingFastEnough() && grabbing)
-                {
-                    disk.Throw(CalculateVRVelocity());
-                }
-                grabbing = false;
-            }
-            else if (Input.GetAxisRaw(vrInput) > 0.7)
-            {
-                disk.SetBlocking(true);
-                grabbing = true;
-            }
-            else if (Input.GetAxisRaw(vrInput) <= buttonReleaseThreshold)
-            {
-                if ((IsHandMovingFastEnough() || playerSpeedThresholdExceeded) && grabbing)
-                {
-                    disk.Throw(CalculateVRVelocity());
-                }
-                else
-                {
-                    disk.SetBlocking(autoBlock);
-                }
-                grabbing = false;
-            }
-        }
-
         public void ReturnDisk(VRCPlayerApi _player, VRCPlayerApi.TrackingData headTrackingData, float hapticDuration, float hapticAmplitude, float hapticFrequency)
         {
             if (!disk.IsReturning()) return;
@@ -222,12 +168,21 @@ namespace ThrowingSystem
 
         public Vector3 CalculateVRVelocity()
         {
-            return Networking.LocalPlayer.GetVelocity() * playerSpeedMultiplyer + _handSpeed * vrThrowMultiplyer;
+            return (Networking.LocalPlayer.GetVelocity() * vrPlayerSpeedMultiplyer + _handSpeed * vrThrowMultiplyer) / 1000f;
         }
 
         public Vector3 CalculateDesktopVelocity(VRCPlayerApi.TrackingData headTrackingData)
         {
-            return headTrackingData.rotation * Vector3.forward * desktopThrowMultiplyer;
+            Vector3 playerLookDirection = Networking.LocalPlayer.GetRotation() * Vector3.forward;
+            float absVelocityLookDirScalar = Mathf.Abs(Vector3.Dot(Networking.LocalPlayer.GetVelocity().normalized, playerLookDirection));
+
+            float velocity = 0;
+            if (absVelocityLookDirScalar > 0.1f)
+            {
+                velocity = Mathf.Abs(Networking.LocalPlayer.GetVelocity().magnitude);
+            }
+
+            return (headTrackingData.rotation * Vector3.forward * (velocity * desktopPlayerSpeedMultiplyer) + headTrackingData.rotation * Vector3.forward * desktopThrowMultiplyer) / 1000f;
         }
 
         private VRCPickup.PickupHand GetPickupHand()
@@ -253,7 +208,7 @@ namespace ThrowingSystem
 
         private bool IsVrThrowInput(bool playerSpeedThresholdExceeded)
         {
-            return (Input.GetAxisRaw(vrInput) <= 0.7 && (IsHandMovingFastEnough() || playerSpeedThresholdExceeded) && grabbing);
+            return (Input.GetAxisRaw(vrInput) > buttonReleaseThreshold && Input.GetAxisRaw(vrInput) <= 0.7 && (IsHandMovingFastEnough() || playerSpeedThresholdExceeded) && grabbing);
         }
 
         public void EmptyHand()

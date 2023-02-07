@@ -15,28 +15,30 @@ namespace ThrowingSystem
         [Header("Prefabs and Scene Objects")]
         [SerializeField] private BoxCollider arenaCollider;
         [SerializeField] private GameObject guardObject;
+        [SerializeField] private AudioSource diskAudioSource;
 
         [Header("General Settings")]
-        [SerializeField] [UdonSynced] private float returnTimeSeconds;
+        [SerializeField] private float airBounceTimeLimit;
         [SerializeField] private float gravityMultiplier;
         [SerializeField] private float returnMultiplierAirborne;
         [SerializeField] private float returnMultiplierInHand;
         [SerializeField] private float distanceThreshold;
         [SerializeField] private float diskSpeedLimit;
-
-        [SerializeField] [UdonSynced] private bool airborne = true;
-        public bool Airborne { get { return airborne; } set { airborne = value; } }
+        [SerializeField] private AnimationCurve returnCurve;
 
         [Header("Visibility")]
         [SerializeField] private Material thrownMat;
         [SerializeField] private Material returnMat;
 
+        [UdonSynced] private bool airborne = true;
+        public bool Airborne { get { return airborne; } set { airborne = value; } }
         [UdonSynced] private bool _blocking = false;
         private VRCPlayerApi _localPlayer;
         private HumanBodyBones hand;
 
         #region BulletDrop
-        [UdonSynced] private float airBounceTime = 0;
+        [UdonSynced] private float airBounceTime = 0f;
+        [UdonSynced] private float returnTime = 0f;
         private int predictionStepsPerFrame = 6;
         private float stepSize { get { return 1f / predictionStepsPerFrame; } }
         [UdonSynced] private float returnMultiplier;
@@ -44,7 +46,7 @@ namespace ThrowingSystem
         #endregion
 
         #region Syncing
-        [UdonSynced] private Vector3 nextPoint = Vector3.zero;
+        [UdonSynced] private Vector3 objectActualPosition = Vector3.zero;
         [UdonSynced] private Vector3 returnOrigin = Vector3.zero;
         [UdonSynced] private Vector3 diskRotation = Vector3.zero;
         #endregion
@@ -54,7 +56,7 @@ namespace ThrowingSystem
             _localPlayer = localPlayer;
 
             this.hand = hand;
-            airBounceTime = returnTimeSeconds + 0.01f;
+            airBounceTime = airBounceTimeLimit + 0.01f;
             returnMultiplier = returnMultiplierAirborne;
 
             RequestSerialization();
@@ -80,9 +82,18 @@ namespace ThrowingSystem
                 InterpolateReturn(returnOrigin);
             }
         }
-        
+
+        private void OnTriggerEnter(Collider other)
+        {
+        }
+
         public override void OnDeserialization()
         {
+            if (Vector3.Distance(objectActualPosition, transform.position) > 1f && Airborne)
+            {
+                transform.position = objectActualPosition;
+            }
+
             transform.rotation = Quaternion.Euler(diskRotation);
 
             guardObject.SetActive(_blocking);
@@ -99,7 +110,7 @@ namespace ThrowingSystem
             {
                 if (hit.collider != null && hit.collider.name != null && hit.collider.name.Contains("Wall"))
                 {
-                    diskVelocity = Vector3.Reflect(diskVelocity, hits[1].normal);
+                    diskVelocity = Vector3.Reflect(diskVelocity, hit.normal);
                     break;
                 }
             }
@@ -108,11 +119,13 @@ namespace ThrowingSystem
         public void ThrowingPhysics()
         {
             Vector3 currPoint = this.transform.position;
+            Vector3 nextPoint = Vector3.zero;
+
             for (float step = 0f; step < 1f; step += stepSize)
             {
-                diskVelocity += Physics.gravity * gravityMultiplier * stepSize * Time.deltaTime;
+                diskVelocity += Physics.gravity * (gravityMultiplier / 1000) * stepSize * Time.deltaTime;
 
-                RaycastForBounce(currPoint, diskVelocity.normalized, stepSize);
+                RaycastForBounce(currPoint, diskVelocity.normalized, diskVelocity.magnitude);
 
                 nextPoint = currPoint + diskVelocity;
 
@@ -128,9 +141,11 @@ namespace ThrowingSystem
             }
             airBounceTime += Time.deltaTime;
 
+            objectActualPosition = nextPoint;
+
             RequestSerialization();
 
-            this.transform.position = nextPoint;
+            transform.position = nextPoint;
         }
 
         /// <summary>
@@ -165,25 +180,32 @@ namespace ThrowingSystem
             if (_distance >= distanceThreshold)
             {
                 transform.SetPositionAndRotation(target, Quaternion.identity);
-                nextPoint = target;
+                objectActualPosition = target;
             }
-            else if (_distance > 0)
+            else if (_distance > 2f)
             {
-                nextPoint = Vector3.Lerp(transform.position, target, Time.deltaTime / _returnSpeed);
+                diskVelocity += (target - transform.position).normalized * returnCurve.Evaluate(returnTime / 5);
+                objectActualPosition = transform.position + diskVelocity;
+            }
+            else
+            {
+                objectActualPosition = Vector3.Lerp(transform.position, target, Time.deltaTime / _returnSpeed);
             }
 
-            this.transform.position = nextPoint;
+            returnTime += Time.deltaTime;
+            this.transform.position = objectActualPosition;
         }
 
         public void Throw(Vector3 velocity)
         {
-            diskVelocity = Vector3.ClampMagnitude(velocity, diskSpeedLimit);
-            transform.rotation = new Quaternion();
-
+            SetRotation(Quaternion.identity);
             SetBlocking(false);
-            Airborne = true;
-            airBounceTime = 0f;
+
+            diskVelocity = Vector3.ClampMagnitude(velocity, diskSpeedLimit);
             returnMultiplier = returnMultiplierAirborne;
+            airBounceTime = 0f;
+            returnTime = 0f;
+            Airborne = true;
 
             RequestSerialization();
         }
@@ -197,7 +219,7 @@ namespace ThrowingSystem
 
         public bool IsReturning()
         {
-            return airBounceTime > returnTimeSeconds;
+            return airBounceTime > airBounceTimeLimit;
         }
 
         public void SetRotation(Quaternion handRotation)
@@ -227,6 +249,7 @@ namespace ThrowingSystem
         public void OnReturnToHand()
         {
             returnMultiplier = returnMultiplierInHand;
+
             SetThrown(false);
         }
     }
