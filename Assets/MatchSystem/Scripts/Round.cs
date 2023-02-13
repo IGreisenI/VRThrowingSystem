@@ -17,9 +17,11 @@ public class Round : UdonSharpBehaviour
         roundTime += Time.deltaTime;
     }
 
-    public void OnPlayerHit()
+    public void StartRound(Team firstTeam, Team secondTeam)
     {
-        
+        roundTime = 0;
+        firstTeam.Respawn();
+        secondTeam.Respawn();
     }
 
     public void CheckConidition()

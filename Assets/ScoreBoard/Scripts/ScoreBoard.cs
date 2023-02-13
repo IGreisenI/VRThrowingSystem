@@ -16,7 +16,7 @@ public class ScoreBoard : UdonSharpBehaviour
 
     private void UpdateScore(int firstTeam, int secondTeam)
     {
-        // update score
+        
     }
 
     private void SetMatchType(string matchType)
@@ -26,7 +26,7 @@ public class ScoreBoard : UdonSharpBehaviour
 
     private void SetMatchRound(int round)
     {
-        matchRound.text = round.ToString();
+        this.matchRound.text = round.ToString();
     }
 
 }

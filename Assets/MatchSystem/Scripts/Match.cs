@@ -1,31 +1,52 @@
-﻿using UdonSharp;
+﻿using System.Collections.Generic;
+using UdonSharp;
 using UnityEngine;
 using VRC.SDKBase;
 using VRC.Udon;
 
 public class Match : UdonSharpBehaviour
 {
-    private Round currentRound;
+    [SerializeField] private int pointsForHit;
+    [SerializeField] private int pointsForRoundWin;
+
+    private Round round;
     private int roundNumber;
 
     private Team firstTeam;
     private Team secondTeam;
-    
-    private int firstTeamScore;
-    private int secondTeamScore;
 
-    private void IncreaseScore(Team team, int score)
+    public void StartMatch()
     {
-
+        roundNumber = 1;
+        round.StartRound(firstTeam, secondTeam);
     }
 
-    private void PlayerHit(VRCPlayerApi player)
+    public void PlayerHit(TeamMember playerHit)
     {
+        if (playerHit.IsImmobilized()) return;
 
+        playerHit.SetImmobilized(true);
+
+        if (PointCondition())
+        {
+            if (firstTeam.PlayerInTeam(playerHit)) secondTeam.AddScore(pointsForHit);
+            else firstTeam.AddScore(pointsForHit);
+        }
+
+        if (firstTeam.IsOut() || secondTeam.IsOut())
+        {
+            round.StartRound(firstTeam, secondTeam);
+            roundNumber++;
+        }
     }
 
-    private void WinCondition()
+    public virtual bool PointCondition()
     {
+        return true;
+    }
 
+    public void EndMatch()
+    {
+        
     }
 }
