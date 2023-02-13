@@ -9,12 +9,12 @@ public class Team : UdonSharpBehaviour
     private string teamName;
     private Color teamColor;
     private int teamScore;
-    private List<TeamMember> players;
-    private List<GameObject> spawns;
+    private TeamMember[] players;
+    private GameObject[] spawns;
 
     public void Respawn() {
         
-        for(int i = 0; i < players.Count; i++)
+        for(int i = 0; i < players.Length; i++)
         {
             players[i].playerAPI.TeleportTo(spawns[i].transform.position, spawns[i].transform.rotation);
         }
@@ -25,6 +25,11 @@ public class Team : UdonSharpBehaviour
         teamScore += score;
     }
 
+    public int GetScore()
+    {
+        return teamScore;
+    }
+
     public void ResetScore()
     {
         teamScore = 0;
@@ -32,18 +37,27 @@ public class Team : UdonSharpBehaviour
 
     public bool IsOut()
     {
-        bool result = true;
         foreach(TeamMember player in players)
         {
-            if (!player.immobilized) result = false;
+            if (!player.immobilized) return false;
         }
 
-        return result;
+        return true;
     }
 
+    /// <summary>
+    /// Can't use contains so we do this
+    /// </summary>
+    /// <param name="player"></param>
+    /// <returns></returns>
     public bool PlayerInTeam(TeamMember player)
     {
-        return players.Contains(player);
+        foreach (TeamMember member in players)
+        {
+            if (member == player) return true;
+        }
+
+        return false;
     }
 
     public void DisbandTeam()

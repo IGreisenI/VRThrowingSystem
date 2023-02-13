@@ -5,6 +5,15 @@ using UnityEngine.UI;
 using TMPro;
 using System.Collections.Generic;
 
+public struct MatchState
+{
+    int firstTeamScore;
+    int secondTeamScore;
+    float timers;
+    string winnerName;
+    string matchType;
+    int matchRound;
+}
 public class ScoreBoard : UdonSharpBehaviour
 {
     [SerializeField] private TextMeshProUGUI[] firstTeamScore;
@@ -14,19 +23,8 @@ public class ScoreBoard : UdonSharpBehaviour
     [SerializeField] private TextMeshProUGUI matchType;
     [SerializeField] private TextMeshProUGUI matchRound;
 
-    private void UpdateScore(int firstTeam, int secondTeam)
+    public void UpdateScoreboard(MatchState matchState)
     {
-        
-    }
 
-    private void SetMatchType(string matchType)
-    {
-        this.matchType.text = matchType;
     }
-
-    private void SetMatchRound(int round)
-    {
-        this.matchRound.text = round.ToString();
-    }
-
 }

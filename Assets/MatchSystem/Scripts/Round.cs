@@ -24,8 +24,8 @@ public class Round : UdonSharpBehaviour
         secondTeam.Respawn();
     }
 
-    public void CheckConidition()
+    public void StopRound()
     {
-
+        
     }
 }

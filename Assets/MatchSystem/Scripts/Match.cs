@@ -6,8 +6,10 @@ using VRC.Udon;
 
 public class Match : UdonSharpBehaviour
 {
-    [SerializeField] private int pointsForHit;
-    [SerializeField] private int pointsForRoundWin;
+    [SerializeField] private ScoreBoard scoreBoard;
+
+    [SerializeField] private int scoreForPointCondition;
+    [SerializeField] private int scoreForWin;
 
     private Round round;
     private int roundNumber;
@@ -29,8 +31,13 @@ public class Match : UdonSharpBehaviour
 
         if (PointCondition())
         {
-            if (firstTeam.PlayerInTeam(playerHit)) secondTeam.AddScore(pointsForHit);
-            else firstTeam.AddScore(pointsForHit);
+            if (firstTeam.PlayerInTeam(playerHit)) secondTeam.AddScore(scoreForPointCondition);
+            else firstTeam.AddScore(scoreForPointCondition);
+        }
+
+        if(firstTeam.GetScore() >= scoreForWin || secondTeam.GetScore() >= scoreForWin)
+        {
+            EndMatch();
         }
 
         if (firstTeam.IsOut() || secondTeam.IsOut())
@@ -38,6 +45,8 @@ public class Match : UdonSharpBehaviour
             round.StartRound(firstTeam, secondTeam);
             roundNumber++;
         }
+
+        scoreBoard.UpdateScoreboard();
     }
 
     public virtual bool PointCondition()
@@ -47,6 +56,9 @@ public class Match : UdonSharpBehaviour
 
     public void EndMatch()
     {
-        
+        roundNumber = 1;
+        round.StopRound();
+        firstTeam.DisbandTeam();
+        secondTeam.DisbandTeam();
     }
 }
