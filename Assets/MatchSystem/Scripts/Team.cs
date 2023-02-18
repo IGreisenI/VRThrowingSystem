@@ -6,17 +6,63 @@ using VRC.Udon;
 
 public class Team : UdonSharpBehaviour
 {
-    private string teamName;
-    private Color teamColor;
-    private int teamScore;
-    private TeamMember[] players;
-    private GameObject[] spawns;
-
-    public void Respawn() {
-        
-        for(int i = 0; i < players.Length; i++)
+    [SerializeField] private string teamName;
+    [SerializeField] private Color teamColor;
+    [SerializeField] private TeamMember[] players;
+    /*{
+        get
         {
-            players[i].playerAPI.TeleportTo(spawns[i].transform.position, spawns[i].transform.rotation);
+            int j = 0;
+
+            for (int i = 0; i < players.Length; i++)
+            {
+                if (players[i].playerAPI != null)
+                {
+                    j++;
+                }
+            }
+
+            TeamMember[] members = new TeamMember[j];
+            j = 0;
+
+            for (int i = 0; i < players.Length; i++)
+            {
+                if (players[i].playerAPI != null)
+                {
+                    members[j] = players[i];
+                    j++;
+                }
+            }
+
+            return members;
+        }
+
+        set
+        {
+            players = value;
+        }
+    }*/
+    [SerializeField] private GameObject[] spawns;
+
+    private int teamScore;
+
+    public void Respawn() 
+    {
+        for (int i = 0; i < players.Length; i++)
+        {
+            if (players[i].playerAPI != null)
+            {
+                players[i].playerAPI.TeleportTo(spawns[i].transform.position, spawns[i].transform.rotation);
+                players[i].SetImmobilized(true);
+            }
+        }
+    }
+
+    public void FreeMembers()
+    {
+        for (int i = 0; i < players.Length; i++)
+        {
+            players[i].SetImmobilized(false);
         }
     }
 
@@ -35,6 +81,26 @@ public class Team : UdonSharpBehaviour
         teamScore = 0;
     }
 
+    public Color GetColor()
+    {
+        return teamColor;
+    }
+
+    public bool IsPlayerInTeam(VRCPlayerApi player)
+    {
+        foreach (TeamMember member in players)
+        {
+            if (member.playerAPI == player) return true;
+        }
+
+        return false;
+    }
+    
+    public TeamMember[] GetMembers()
+    {
+        return players;
+    }
+ 
     public bool IsOut()
     {
         foreach(TeamMember player in players)

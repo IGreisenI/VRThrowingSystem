@@ -85,6 +85,7 @@ namespace ThrowingSystem
 
         private void OnTriggerEnter(Collider other)
         {
+
         }
 
         public override void OnDeserialization()
@@ -251,6 +252,11 @@ namespace ThrowingSystem
             returnMultiplier = returnMultiplierInHand;
 
             SetThrown(false);
+        }
+
+        public VRCPlayerApi GetPlayerOwner()
+        {
+            return _localPlayer;
         }
     }
 }

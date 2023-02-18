@@ -8,22 +8,53 @@ public class Match : UdonSharpBehaviour
 {
     [SerializeField] private ScoreBoard scoreBoard;
 
+    [SerializeField] private Round round;
+
+    [SerializeField] private Team firstTeam;
+    [SerializeField] private Team secondTeam;
+
+    [SerializeField] private string matchType;
+
     [SerializeField] private int scoreForPointCondition;
     [SerializeField] private int scoreForWin;
 
-    private Round round;
     private int roundNumber;
+    private bool isInProgress;
 
-    private Team firstTeam;
-    private Team secondTeam;
+    #region CACHE   
+    private Team teamScored;
+    private Team teamWon;
+    #endregion
 
+    [ContextMenu("StartMatch")]
     public void StartMatch()
     {
         roundNumber = 1;
-        round.StartRound(firstTeam, secondTeam);
+        round.PrepareRound(firstTeam, secondTeam);
+        isInProgress = true;
+
+        // Show UI
+        scoreBoard.ShowMatchType(matchType);
+        scoreBoard.ShowTeams(firstTeam, secondTeam);
     }
 
-    public void PlayerHit(TeamMember playerHit)
+    private void Update()
+    {
+        if (round == null || !isInProgress) return;
+
+        if (round.IsInProgress())
+        {
+            scoreBoard.ShowMatchTime(round.GetTimeText());
+        }
+        else
+        {
+            scoreBoard.ShowBeteenTimers(round.GetBetweenTimeText());
+        }
+
+        CheckIfPlayerHit();
+    }
+
+    public void OnPlayerHit(TeamMember playerHit)
     {
         if (playerHit.IsImmobilized()) return;
 
@@ -31,22 +62,27 @@ public class Match : UdonSharpBehaviour
 
         if (PointCondition())
         {
-            if (firstTeam.PlayerInTeam(playerHit)) secondTeam.AddScore(scoreForPointCondition);
-            else firstTeam.AddScore(scoreForPointCondition);
-        }
+            teamScored = firstTeam.PlayerInTeam(playerHit) ? secondTeam : firstTeam;
+            teamScored.AddScore(scoreForPointCondition);
 
-        if(firstTeam.GetScore() >= scoreForWin || secondTeam.GetScore() >= scoreForWin)
-        {
-            EndMatch();
+            if (firstTeam == teamScored) scoreBoard.ShowFirstTeamScore(teamScored.GetScore());
+            if (secondTeam == teamScored) scoreBoard.ShowSecondTeamScore(teamScored.GetScore());
         }
 
         if (firstTeam.IsOut() || secondTeam.IsOut())
         {
-            round.StartRound(firstTeam, secondTeam);
+            round.PrepareRound(firstTeam, secondTeam);
             roundNumber++;
+            scoreBoard.ShowMatchRound(roundNumber);
         }
 
-        scoreBoard.UpdateScoreboard();
+        if(firstTeam.GetScore() >= scoreForWin || secondTeam.GetScore() >= scoreForWin)
+        {
+            teamWon = firstTeam.GetScore() >= scoreForWin ? firstTeam : secondTeam;
+            scoreBoard.ShowWinner(teamWon.GetMembers(), teamWon.GetColor());
+            
+            EndMatch();
+        }
     }
 
     public virtual bool PointCondition()
@@ -60,5 +96,24 @@ public class Match : UdonSharpBehaviour
         round.StopRound();
         firstTeam.DisbandTeam();
         secondTeam.DisbandTeam();
+    }
+
+    public void CheckIfPlayerHit()
+    {
+        foreach(TeamMember teamMember in firstTeam.GetMembers())
+        {
+            if (teamMember.hit && secondTeam.IsPlayerInTeam(teamMember.gotHitByPlayer))
+            {
+                OnPlayerHit(teamMember);
+            }
+        }
+
+        foreach (TeamMember teamMember in secondTeam.GetMembers())
+        {
+            if (teamMember.hit && firstTeam.IsPlayerInTeam(teamMember.gotHitByPlayer))
+            {
+                OnPlayerHit(teamMember);
+            }
+        }
     }
 }
