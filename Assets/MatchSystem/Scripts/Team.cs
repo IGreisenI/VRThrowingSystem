@@ -9,6 +9,9 @@ public class Team : UdonSharpBehaviour
     [SerializeField] private string teamName;
     [SerializeField] private Color teamColor;
     [SerializeField] private TeamMember[] _players;
+    [SerializeField] private GameObject[] spawns;
+
+    private int teamScore;
     private TeamMember[] Players
     {
         get
@@ -43,9 +46,6 @@ public class Team : UdonSharpBehaviour
             _players = value;
         }
     }
-    [SerializeField] private GameObject[] spawns;
-
-    private int teamScore;
 
     public void Respawn() 
     {

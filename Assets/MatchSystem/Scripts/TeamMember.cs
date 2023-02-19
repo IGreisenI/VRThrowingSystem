@@ -6,6 +6,7 @@ using VRC.SDKBase;
 public class TeamMember : UdonSharpBehaviour
 {
     public VRCPlayerApi playerAPI;
+    public string playerName;
     public bool immobilized = false;
     public bool hit = false;
     public VRCPlayerApi gotHitByPlayer;
