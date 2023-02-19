@@ -10,8 +10,7 @@ public class TeamAssignmentTrigger : UdonSharpBehaviour
 
     public override void OnPlayerTriggerEnter(VRCPlayerApi player)
     {
-        AssingTeamMemeber(player);            
-        gameObject.SetActive(false);
+        AssingTeamMemeber(player);  
     }
 
     public TeamMember AssingTeamMemeber(VRCPlayerApi player)

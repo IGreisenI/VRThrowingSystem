@@ -1,13 +1,10 @@
-﻿using System;
-using UdonSharp;
+﻿using UdonSharp;
 using UnityEngine;
-using VRC.SDKBase;
-using VRC.Udon;
 
 public class Round : UdonSharpBehaviour
 {
-    private bool isInProgress;
-    private string betweenText;
+    private bool isInProgress = false;
+    private string betweenText = "Preparing... ";
 
     private float roundTime;
 
@@ -22,42 +19,54 @@ public class Round : UdonSharpBehaviour
     private void Update()
     {
         roundTime += Time.deltaTime;
+        if(3f - roundTime < 0f && !isInProgress)
+        {
+            StartRound();
+        }
     }
 
     public void PrepareRound(Team firstTeam, Team secondTeam)
     {
-        betweenText = "Continuing... ";
+        isInProgress = false;
+        betweenText = "Preparing... ";
         roundTime = 0f;
 
         // Do starting text
         // We don't talk about this, why are there no abstraction tools in Udon?
         this.firstTeam = firstTeam;
         this.secondTeam = secondTeam;
-        
-        firstTeam.Respawn();
-        secondTeam.Respawn();
+
+        this.firstTeam.Respawn();
+        this.secondTeam.Respawn();
     }
 
     public void StartRound()
     {
+        isInProgress = true;
         roundTime = 0f;
 
-        firstTeam.FreeMembers();
-        secondTeam.FreeMembers();
+        if(firstTeam)
+            this.firstTeam.FreeMembers();
+        
+        if(secondTeam)
+            this.secondTeam.FreeMembers();
     }
 
     public string GetTimeText()
     {
-        return (int)(roundTime / 60f) + " [min] " + (roundTime % 60f) + "[sec]";
+        return (int)(roundTime / 60f) + " [min] " + (roundTime % 60f).ToString("00.0") + "[sec]";
     }
 
     public string GetBetweenTimeText()
     {
-        return betweenText + ((int)(3f - roundTime)).ToString();
+        if ((3f - roundTime) < 0) return "";
+
+        return $"{betweenText} {((int)(3f - roundTime))}";
     }
 
     public void StopRound()
     {
+        isInProgress = false;
         roundTime = 0f;
         betweenText = "Restarting... ";
     }

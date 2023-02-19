@@ -15,19 +15,19 @@ public class ScoreBoard : UdonSharpBehaviour
     [SerializeField] private TextMeshProUGUI matchType;
     [SerializeField] private TextMeshProUGUI matchRound;
 
-    public void ShowFirstTeamScore(int score)
+    public void ShowFirstTeamScore(int score, int maxScore)
     {
         for(int i = 0; i < firstTeamScore.Length; i++)
         {
-            firstTeamScore[i].text = score.ToString();
+            firstTeamScore[i].text = score.ToString() + "/" + maxScore;
         }
     }
 
-    public void ShowSecondTeamScore(int score)
+    public void ShowSecondTeamScore(int score, int maxScore)
     {
         for (int i = 0; i < secondTeamScore.Length; i++)
         {
-            secondTeamScore[i].text = score.ToString();
+            secondTeamScore[i].text = score.ToString() + "/" + maxScore;
         }
     }
 
@@ -39,7 +39,7 @@ public class ScoreBoard : UdonSharpBehaviour
         }
     }
 
-    public void ShowBeteenTimers(string timeText)
+    public void ShowBetweenTimers(string timeText)
     {
         for (int i = 0; i < betweenTimers.Length; i++)
         {
@@ -63,7 +63,7 @@ public class ScoreBoard : UdonSharpBehaviour
 
     public void ShowMatchRound(int round)
     {
-        this.matchRound.text = round.ToString();
+        this.matchRound.text = round.ToString() + ". Round";
     }
 
     public void ShowTeams(Team firstTeam, Team secondTeam)
@@ -72,7 +72,7 @@ public class ScoreBoard : UdonSharpBehaviour
 
         foreach(TeamMember member in firstTeam.GetMembers())
         {
-            words += member.playerAPI.displayName + "\n";
+            words = words + member.playerAPI.displayName;
         }
 
         for (int i = 0; i < firstTeamMembers.Length; i++)
@@ -84,7 +84,7 @@ public class ScoreBoard : UdonSharpBehaviour
         words = "";
         foreach (TeamMember member in secondTeam.GetMembers())
         {
-            words += member.playerAPI.displayName + "\n";
+            words = words + member.playerAPI.displayName + "\n";
         }
 
         for (int i = 0; i < secondTeamMembers.Length; i++)

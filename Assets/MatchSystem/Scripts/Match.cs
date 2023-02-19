@@ -1,8 +1,5 @@
-﻿using System.Collections.Generic;
-using UdonSharp;
+﻿using UdonSharp;
 using UnityEngine;
-using VRC.SDKBase;
-using VRC.Udon;
 
 public class Match : UdonSharpBehaviour
 {
@@ -19,7 +16,6 @@ public class Match : UdonSharpBehaviour
     [SerializeField] private int scoreForWin;
 
     private int roundNumber;
-    private bool isInProgress;
 
     #region CACHE   
     private Team teamScored;
@@ -31,24 +27,27 @@ public class Match : UdonSharpBehaviour
     {
         roundNumber = 1;
         round.PrepareRound(firstTeam, secondTeam);
-        isInProgress = true;
+        scoreBoard.ShowMatchRound(roundNumber);
 
         // Show UI
         scoreBoard.ShowMatchType(matchType);
         scoreBoard.ShowTeams(firstTeam, secondTeam);
+
+        scoreBoard.ShowFirstTeamScore(firstTeam.GetScore(), scoreForWin);
+        scoreBoard.ShowSecondTeamScore(secondTeam.GetScore(), scoreForWin);
     }
 
+    // Would you look at this update doing Rounds job because events are a joke and don't exist in Udon
     private void Update()
     {
-        if (round == null || !isInProgress) return;
-
         if (round.IsInProgress())
         {
             scoreBoard.ShowMatchTime(round.GetTimeText());
+            scoreBoard.ShowBetweenTimers("");
         }
         else
         {
-            scoreBoard.ShowBeteenTimers(round.GetBetweenTimeText());
+            scoreBoard.ShowBetweenTimers(round.GetBetweenTimeText());
         }
 
         CheckIfPlayerHit();
@@ -65,8 +64,8 @@ public class Match : UdonSharpBehaviour
             teamScored = firstTeam.PlayerInTeam(playerHit) ? secondTeam : firstTeam;
             teamScored.AddScore(scoreForPointCondition);
 
-            if (firstTeam == teamScored) scoreBoard.ShowFirstTeamScore(teamScored.GetScore());
-            if (secondTeam == teamScored) scoreBoard.ShowSecondTeamScore(teamScored.GetScore());
+            if (firstTeam == teamScored) scoreBoard.ShowFirstTeamScore(teamScored.GetScore(), scoreForWin);
+            if (secondTeam == teamScored) scoreBoard.ShowSecondTeamScore(teamScored.GetScore(), scoreForWin);
         }
 
         if (firstTeam.IsOut() || secondTeam.IsOut())
