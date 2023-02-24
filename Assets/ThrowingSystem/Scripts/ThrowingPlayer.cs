@@ -60,14 +60,19 @@ namespace ThrowingSystem
                 _player = player;
                 _isUserInVR = _player.IsUserInVR();
 
-                ThrowingObject firstDisk = ts.spawnDisk(player).Initialize(_player, HumanBodyBones.LeftHand);
-                ThrowingObject secondDisk = ts.spawnDisk(player).Initialize(_player, HumanBodyBones.RightHand);
+                ThrowingObject firstDisk = ts.SpawnDisk(player).Initialize(_player, HumanBodyBones.LeftHand);
+                ThrowingObject secondDisk = ts.SpawnDisk(player).Initialize(_player, HumanBodyBones.RightHand);
 
                 leftPlayerHand.Init(false, autoBlock, ts.desktopLeftOffset, firstDisk, HumanBodyBones.LeftHand, ts.desktopLeftInput, ts.vrLeftInput, handSpeedThreshold, buttonReleaseThreshold);
                 rightPlayerHand.Init(false, autoBlock, ts.desktopRightOffset, secondDisk, HumanBodyBones.RightHand, ts.desktopRightInput, ts.vrRightInput, handSpeedThreshold, buttonReleaseThreshold);
 
                 GetComponent<BoxCollider>().enabled = false;
             }
+        }
+
+        public bool HasActiveDisks()
+        {
+            return leftPlayerHand.HasDisk() || rightPlayerHand.HasDisk();
         }
 
         private void FixedUpdate()

@@ -217,5 +217,10 @@ namespace ThrowingSystem
             disk = null;
             occupied = false;
         }
+
+        public bool HasDisk()
+        {
+            return disk.enabled;
+        }
     }
 }

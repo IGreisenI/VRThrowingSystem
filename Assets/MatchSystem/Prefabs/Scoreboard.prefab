@@ -61,14 +61,17 @@ MonoBehaviour:
   - {fileID: 4692117371529376234}
   - {fileID: 4692117371415358029}
   - {fileID: 4990824029536797411}
+  firstTeamMembers: []
   secondTeamScore:
   - {fileID: 4692117372609874493}
   - {fileID: 4692117372312706234}
   - {fileID: 5858397263043067712}
-  timers:
+  secondTeamMembers: []
+  matchTimers:
   - {fileID: 2568658409911178004}
   - {fileID: 4692117371143589156}
   - {fileID: 7046514808583624875}
+  betweenTimers: []
   winnerName:
   - {fileID: 8889397378731792581}
   - {fileID: 2757531884161739975}
@@ -94,7 +97,7 @@ MonoBehaviour:
   SynchronizePosition: 0
   AllowCollisionOwnershipTransfer: 0
   Reliable: 0
-  _syncMethod: 2
+  _syncMethod: 3
   serializedProgramAsset: {fileID: 11400000, guid: bb6bd71d53f22ba49973b3d82db6dcf7,
     type: 2}
   programSource: {fileID: 11400000, guid: d683c0a80eed84441838b887ded103a0, type: 2}

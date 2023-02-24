@@ -25,7 +25,7 @@ namespace ThrowingSystem
         [Header("List of cached disks")]
         [SerializeField] private GameObject[] disks;
 
-        public ThrowingObject spawnDisk(VRCPlayerApi player)
+        public ThrowingObject SpawnDisk(VRCPlayerApi player)
         {
             Networking.SetOwner(player, pool.gameObject);
             GameObject obj = pool.TryToSpawn();
@@ -36,6 +36,18 @@ namespace ThrowingSystem
                 return obj.GetComponent<ThrowingObject>();
             }
             else return null;
+        }
+
+        public void DespawnDisks()
+        {
+            foreach(ThrowingObject disk in pool.GetComponentsInChildren<ThrowingObject>())
+            {
+                if (disk.gameObject.activeSelf)
+                {
+                    disk.ResetDisk();
+                    pool.Return(disk.gameObject);
+                }
+            }
         }
     }
 }

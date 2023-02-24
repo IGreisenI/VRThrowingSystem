@@ -49,9 +49,16 @@ public class ScoreBoard : UdonSharpBehaviour
 
     public void ShowWinner(TeamMember[] winners, Color color)
     {
+        string words = "";
+
+        foreach (TeamMember member in winners)
+        {
+            words = words + member.playerName + " \n";
+        }
+
         for (int i = 0; i < winnerName.Length; i++)
         {
-            winnerName[i].text = "Winner";
+            winnerName[i].text = words;
             winnerName[i].color = color;
         }
     }
@@ -72,7 +79,7 @@ public class ScoreBoard : UdonSharpBehaviour
 
         foreach(TeamMember member in firstTeam.GetMembers())
         {
-            words = words + member.playerAPI.displayName;
+            words = words + member.playerName + " \n";
         }
 
         for (int i = 0; i < firstTeamMembers.Length; i++)
@@ -84,7 +91,7 @@ public class ScoreBoard : UdonSharpBehaviour
         words = "";
         foreach (TeamMember member in secondTeam.GetMembers())
         {
-            words = words + member.playerAPI.displayName + "\n";
+            words = words + member.playerName + " \n";
         }
 
         for (int i = 0; i < secondTeamMembers.Length; i++)

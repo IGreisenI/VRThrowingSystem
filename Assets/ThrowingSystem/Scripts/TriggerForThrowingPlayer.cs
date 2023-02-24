@@ -15,10 +15,20 @@ namespace ThrowingSystem {
             Networking.SetOwner(player, this.gameObject);
             if (player == Networking.LocalPlayer)
             {
-                ThrowingPlayer tP = Instantiate(throwingPlayerPrefab, transform.position, Quaternion.identity, throwingPlayers).GetComponent<ThrowingPlayer>();
-                Networking.SetOwner(player, tP.gameObject);
-                gameObject.SetActive(false);
+                ThrowingPlayer tP = throwingPlayers.GetComponentInChildren<ThrowingPlayer>();
+                if (tP)
+                {
+                    if(!tP.HasActiveDisks())
+                        tP.OnPlayerTriggerStay(player);
+                }
+                else
+                {
+                    tP = Instantiate(throwingPlayerPrefab, transform.position, Quaternion.identity, throwingPlayers).GetComponent<ThrowingPlayer>();
+                    Networking.SetOwner(player, tP.gameObject);
+                }
+
             }
+            gameObject.SetActive(false);
         }
     }
 }

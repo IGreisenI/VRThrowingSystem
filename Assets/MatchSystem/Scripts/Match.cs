@@ -1,5 +1,7 @@
 ﻿using UdonSharp;
 using UnityEngine;
+using UnityEngine.UI;
+using VRC.SDKBase;
 
 public class Match : UdonSharpBehaviour
 {
@@ -10,23 +12,35 @@ public class Match : UdonSharpBehaviour
     [SerializeField] private Team firstTeam;
     [SerializeField] private Team secondTeam;
 
+    [SerializeField] private ThrowingSystem.ThrowingSystem throwingSystem;
+
     [SerializeField] private string matchType;
 
     [SerializeField] private int scoreForPointCondition;
     [SerializeField] private int scoreForWin;
 
-    private int roundNumber;
+    [UdonSynced] private int roundNumber;
+    [UdonSynced] private bool isInProgress = false;
 
     #region CACHE   
     private Team teamScored;
     private Team teamWon;
     #endregion
 
-    [ContextMenu("StartMatch")]
+    public void StartMatchNetworked()
+    {
+        SendCustomNetworkEvent(VRC.Udon.Common.Interfaces.NetworkEventTarget.All, "StartMatch");
+    }
+
     public void StartMatch()
     {
         roundNumber = 1;
-        round.PrepareRound(firstTeam, secondTeam);
+        isInProgress = true;
+        if (Networking.LocalPlayer.isMaster)
+        {
+            round.PrepareRound();
+        }
+
         scoreBoard.ShowMatchRound(roundNumber);
 
         // Show UI
@@ -37,9 +51,25 @@ public class Match : UdonSharpBehaviour
         scoreBoard.ShowSecondTeamScore(secondTeam.GetScore(), scoreForWin);
     }
 
-    // Would you look at this update doing Rounds job because events are a joke and don't exist in Udon
     private void Update()
     {
+        if (!isInProgress) {
+
+            if (Networking.GetOwner(this.gameObject) != Networking.LocalPlayer) {
+                scoreBoard.ShowFirstTeamScore(firstTeam.GetScore(), scoreForWin);
+                scoreBoard.ShowSecondTeamScore(secondTeam.GetScore(), scoreForWin);
+                scoreBoard.ShowMatchRound(roundNumber);
+
+                if (firstTeam.GetScore() >= scoreForWin || secondTeam.GetScore() >= scoreForWin)
+                {
+                    teamWon = firstTeam.GetScore() >= scoreForWin ? firstTeam : secondTeam;
+                    scoreBoard.ShowWinner(teamWon.GetMembers(), teamWon.GetColor());
+                }
+            }
+            return;
+
+        }
+
         if (round.IsInProgress())
         {
             scoreBoard.ShowMatchTime(round.GetTimeText());
@@ -50,14 +80,32 @@ public class Match : UdonSharpBehaviour
             scoreBoard.ShowBetweenTimers(round.GetBetweenTimeText());
         }
 
-        CheckIfPlayerHit();
+        if (Networking.GetOwner(this.gameObject) == Networking.LocalPlayer)
+        {
+            CheckIfPlayerHit();
+            RequestSerialization();
+        }
+        else
+        {
+            scoreBoard.ShowFirstTeamScore(firstTeam.GetScore(), scoreForWin);
+            scoreBoard.ShowSecondTeamScore(secondTeam.GetScore(), scoreForWin);
+            scoreBoard.ShowMatchRound(roundNumber);
+
+            if (firstTeam.GetScore() >= scoreForWin || secondTeam.GetScore() >= scoreForWin)
+            {
+                teamWon = firstTeam.GetScore() >= scoreForWin ? firstTeam : secondTeam;
+                scoreBoard.ShowWinner(teamWon.GetMembers(), teamWon.GetColor());
+            }
+        }
     }
 
     public void OnPlayerHit(TeamMember playerHit)
     {
-        if (playerHit.IsImmobilized()) return;
+        if (playerHit.IsImmobilized() && !Networking.LocalPlayer.isInstanceOwner) return;
 
         playerHit.SetImmobilized(true);
+        playerHit.OnHit();
+        playerHit.RequestSerialization();
 
         if (PointCondition())
         {
@@ -68,30 +116,32 @@ public class Match : UdonSharpBehaviour
             if (secondTeam == teamScored) scoreBoard.ShowSecondTeamScore(teamScored.GetScore(), scoreForWin);
         }
 
-        if (firstTeam.IsOut() || secondTeam.IsOut())
-        {
-            round.PrepareRound(firstTeam, secondTeam);
-            roundNumber++;
-            scoreBoard.ShowMatchRound(roundNumber);
-        }
-
         if(firstTeam.GetScore() >= scoreForWin || secondTeam.GetScore() >= scoreForWin)
         {
             teamWon = firstTeam.GetScore() >= scoreForWin ? firstTeam : secondTeam;
             scoreBoard.ShowWinner(teamWon.GetMembers(), teamWon.GetColor());
-            
+
             EndMatch();
+            return;
+        }
+
+        if (firstTeam.IsOut() || secondTeam.IsOut())
+        {
+            round.StopRound();
+            roundNumber++;
+            scoreBoard.ShowMatchRound(roundNumber);
         }
     }
 
     public virtual bool PointCondition()
     {
-        return true;
+        return firstTeam.IsOut() || secondTeam.IsOut();
     }
 
     public void EndMatch()
     {
-        roundNumber = 1;
+        isInProgress = false;
+        throwingSystem.SendCustomNetworkEvent(VRC.Udon.Common.Interfaces.NetworkEventTarget.All, "DespawnDisks");
         round.StopRound();
         firstTeam.DisbandTeam();
         secondTeam.DisbandTeam();
@@ -99,20 +149,34 @@ public class Match : UdonSharpBehaviour
 
     public void CheckIfPlayerHit()
     {
-        foreach(TeamMember teamMember in firstTeam.GetMembers())
+        foreach(TeamMember firstTeamMember in firstTeam.GetMembers())
         {
-            if (teamMember.hit && secondTeam.IsPlayerInTeam(teamMember.gotHitByPlayer))
+            if (firstTeamMember.hit && secondTeam.IsPlayerInTeam(firstTeamMember.gotHitByPlayer))
             {
-                OnPlayerHit(teamMember);
+                if (!firstTeamMember.isOut)
+                {
+                    firstTeamMember.SetModelColor(secondTeam.GetColor());
+                    OnPlayerHit(firstTeamMember);
+                    firstTeamMember.hit = false;
+                    return;
+                }
             }
+            firstTeamMember.hit = false;
         }
 
-        foreach (TeamMember teamMember in secondTeam.GetMembers())
+        foreach (TeamMember secondTeamMember in secondTeam.GetMembers())
         {
-            if (teamMember.hit && firstTeam.IsPlayerInTeam(teamMember.gotHitByPlayer))
+            if (secondTeamMember.hit && firstTeam.IsPlayerInTeam(secondTeamMember.gotHitByPlayer))
             {
-                OnPlayerHit(teamMember);
+                if (!secondTeamMember.isOut)
+                {
+                    secondTeamMember.SetModelColor(firstTeam.GetColor());
+                    OnPlayerHit(secondTeamMember);
+                    secondTeamMember.hit = false;
+                    return;
+                }
             }
+            secondTeamMember.hit = false;
         }
     }
 }

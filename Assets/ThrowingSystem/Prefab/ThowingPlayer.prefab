@@ -64,11 +64,13 @@ MonoBehaviour:
   hapticDuration: 0
   hapticAmplitude: 0
   hapticFrequency: 0
+  desktopPlayerSpeedThreshold: 0
+  desktopHandSpeedThreshold: 0
   handSpeedThreshold: 1
-  playerSpeedThreshold: 1
+  vrPlayerSpeedThreshold: 0
   buttonReleaseThreshold: 0.1
-  leftPlayerHand: {fileID: 5731262153402745016}
-  rightPlayerHand: {fileID: 3258949365361114205}
+  leftPlayerHand: {fileID: 5885628935307366857}
+  rightPlayerHand: {fileID: 3683489207980059948}
 --- !u!114 &4686891513319392472
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -168,6 +170,12 @@ PrefabInstance:
       value: 
       objectReference: {fileID: -6726487137632120249, guid: 1be4257936f9a6f46927ef2fbdff8f06,
         type: 3}
+    - target: {fileID: -3586191821354413353, guid: 1be4257936f9a6f46927ef2fbdff8f06,
+        type: 3}
+      propertyPath: serializationData.Prefab
+      value: 
+      objectReference: {fileID: -3586191821354413353, guid: 1be4257936f9a6f46927ef2fbdff8f06,
+        type: 3}
     - target: {fileID: -3449980186740276314, guid: 1be4257936f9a6f46927ef2fbdff8f06,
         type: 3}
       propertyPath: serializationData.Prefab
@@ -249,9 +257,9 @@ Transform:
     type: 3}
   m_PrefabInstance: {fileID: 2276215417074860830}
   m_PrefabAsset: {fileID: 0}
---- !u!114 &5731262153402745016 stripped
+--- !u!114 &5885628935307366857 stripped
 MonoBehaviour:
-  m_CorrespondingSourceObject: {fileID: -3449980186740276314, guid: 1be4257936f9a6f46927ef2fbdff8f06,
+  m_CorrespondingSourceObject: {fileID: -3586191821354413353, guid: 1be4257936f9a6f46927ef2fbdff8f06,
     type: 3}
   m_PrefabInstance: {fileID: 2276215417074860830}
   m_PrefabAsset: {fileID: 0}
@@ -273,6 +281,12 @@ PrefabInstance:
       propertyPath: serializationData.Prefab
       value: 
       objectReference: {fileID: -6726487137632120249, guid: 1be4257936f9a6f46927ef2fbdff8f06,
+        type: 3}
+    - target: {fileID: -3586191821354413353, guid: 1be4257936f9a6f46927ef2fbdff8f06,
+        type: 3}
+      propertyPath: serializationData.Prefab
+      value: 
+      objectReference: {fileID: -3586191821354413353, guid: 1be4257936f9a6f46927ef2fbdff8f06,
         type: 3}
     - target: {fileID: -3449980186740276314, guid: 1be4257936f9a6f46927ef2fbdff8f06,
         type: 3}
@@ -345,7 +359,7 @@ PrefabInstance:
         type: 3}
       propertyPath: _udonSharpBackingUdonBehaviour
       value: 
-      objectReference: {fileID: 2350378043269729607}
+      objectReference: {fileID: 0}
     - target: {fileID: 7404603437399778325, guid: 1be4257936f9a6f46927ef2fbdff8f06,
         type: 3}
       propertyPath: m_Name
@@ -361,9 +375,9 @@ Transform:
     type: 3}
   m_PrefabInstance: {fileID: 9017658233881411579}
   m_PrefabAsset: {fileID: 0}
---- !u!114 &3258949365361114205 stripped
+--- !u!114 &3683489207980059948 stripped
 MonoBehaviour:
-  m_CorrespondingSourceObject: {fileID: -3449980186740276314, guid: 1be4257936f9a6f46927ef2fbdff8f06,
+  m_CorrespondingSourceObject: {fileID: -3586191821354413353, guid: 1be4257936f9a6f46927ef2fbdff8f06,
     type: 3}
   m_PrefabInstance: {fileID: 9017658233881411579}
   m_PrefabAsset: {fileID: 0}
@@ -371,17 +385,5 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: d66653693faed6f40bbf9993f1f5304c, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
---- !u!114 &2350378043269729607 stripped
-MonoBehaviour:
-  m_CorrespondingSourceObject: {fileID: 6754009669038568124, guid: 1be4257936f9a6f46927ef2fbdff8f06,
-    type: 3}
-  m_PrefabInstance: {fileID: 9017658233881411579}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 0}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 45115577ef41a5b4ca741ed302693907, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 

@@ -1,43 +1,50 @@
 ﻿using UdonSharp;
 using UnityEngine;
+using VRC.SDKBase;
 
 public class Round : UdonSharpBehaviour
 {
-    private bool isInProgress = false;
-    private string betweenText = "Preparing... ";
+    [SerializeField] private Team firstTeam;
+    [SerializeField]private Team secondTeam;
 
-    private float roundTime;
+    [UdonSynced] private bool isInProgress = false;
+    [UdonSynced] private bool isRestarting = false;
+    [UdonSynced] private string betweenText = "Preparing... ";
 
-    private Team firstTeam;
-    private Team secondTeam;
+    [UdonSynced] private float roundTime = 0f;
 
-    private void Start()
-    {
-        roundTime = 0;
-    }
 
     private void Update()
     {
+        if (Networking.GetOwner(this.gameObject) != Networking.LocalPlayer) return;
+
         roundTime += Time.deltaTime;
         if(3f - roundTime < 0f && !isInProgress)
         {
-            StartRound();
+            if (!isRestarting)
+            {
+                StartRound();
+            }
+            else
+            {
+                PrepareRound();
+            }
         }
+
+        RequestSerialization();
     }
 
-    public void PrepareRound(Team firstTeam, Team secondTeam)
+    public void PrepareRound()
     {
         isInProgress = false;
+        isRestarting = false;
         betweenText = "Preparing... ";
         roundTime = 0f;
 
-        // Do starting text
-        // We don't talk about this, why are there no abstraction tools in Udon?
-        this.firstTeam = firstTeam;
-        this.secondTeam = secondTeam;
-
         this.firstTeam.Respawn();
         this.secondTeam.Respawn();
+
+        RequestSerialization();
     }
 
     public void StartRound()
@@ -50,6 +57,8 @@ public class Round : UdonSharpBehaviour
         
         if(secondTeam)
             this.secondTeam.FreeMembers();
+
+        RequestSerialization();
     }
 
     public string GetTimeText()
@@ -69,6 +78,9 @@ public class Round : UdonSharpBehaviour
         isInProgress = false;
         roundTime = 0f;
         betweenText = "Restarting... ";
+        isRestarting = true;
+
+        RequestSerialization();
     }
 
     public bool IsInProgress()

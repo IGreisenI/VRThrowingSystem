@@ -34,6 +34,7 @@ namespace ThrowingSystem
         public bool Airborne { get { return airborne; } set { airborne = value; } }
         [UdonSynced] private bool _blocking = false;
         private VRCPlayerApi _localPlayer;
+        [UdonSynced] private string playerName;
         private HumanBodyBones hand;
 
         #region BulletDrop
@@ -54,6 +55,11 @@ namespace ThrowingSystem
         public ThrowingObject Initialize(VRCPlayerApi localPlayer, HumanBodyBones hand)
         {
             _localPlayer = localPlayer;
+            playerName = localPlayer.displayName;
+
+            airBounceTime = 0f;
+            returnTime = 0f;
+            diskVelocity = Vector3.zero;
 
             this.hand = hand;
             airBounceTime = airBounceTimeLimit + 0.01f;
@@ -254,9 +260,9 @@ namespace ThrowingSystem
             SetThrown(false);
         }
 
-        public VRCPlayerApi GetPlayerOwner()
+        public string GetPlayerName()
         {
-            return _localPlayer;
+            return playerName;
         }
     }
 }

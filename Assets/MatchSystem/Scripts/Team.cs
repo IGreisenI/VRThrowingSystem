@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using UdonSharp;
 using UnityEngine;
+using VRC.SDK3.Components;
 using VRC.SDKBase;
 using VRC.Udon;
 
@@ -10,8 +11,9 @@ public class Team : UdonSharpBehaviour
     [SerializeField] private Color teamColor;
     [SerializeField] private TeamMember[] _players;
     [SerializeField] private GameObject[] spawns;
+    [SerializeField] private VRCObjectPool teamMemberPool;
 
-    private int teamScore;
+    [UdonSynced] private int teamScore;
     private TeamMember[] Players
     {
         get
@@ -20,7 +22,7 @@ public class Team : UdonSharpBehaviour
 
             for (int i = 0; i < _players.Length; i++)
             {
-                if (_players[i].playerAPI != null && _players[i].enabled)
+                if (_players[i].playerName != "" && _players[i].enabled)
                 {
                     j++;
                 }
@@ -31,7 +33,7 @@ public class Team : UdonSharpBehaviour
 
             for (int i = 0; i < _players.Length; i++)
             {
-                if (_players[i].playerAPI != null && _players[i].enabled)
+                if (_players[i].playerName != "" && _players[i].enabled)
                 {
                     members[j] = _players[i];
                     j++;
@@ -47,15 +49,14 @@ public class Team : UdonSharpBehaviour
         }
     }
 
-    public void Respawn() 
+    public void Respawn()    
     {
-        Debug.Log(Players.Length);
-
         for (int i = 0; i < Players.Length; i++)
         {
             if (Players[i].playerAPI != null)
             {
-                Players[i].playerAPI.TeleportTo(spawns[i].transform.position, spawns[i].transform.rotation);
+                Players[i].OnResetRound();
+                Players[i].Teleport();
                 Players[i].SetImmobilized(true);
             }
         }
@@ -72,6 +73,7 @@ public class Team : UdonSharpBehaviour
     public void AddScore(int score)
     {
         teamScore += score;
+        RequestSerialization();
     }
 
     public int GetScore()
@@ -82,6 +84,7 @@ public class Team : UdonSharpBehaviour
     public void ResetScore()
     {
         teamScore = 0;
+        RequestSerialization();
     }
 
     public Color GetColor()
@@ -108,9 +111,8 @@ public class Team : UdonSharpBehaviour
     {
         foreach(TeamMember player in Players)
         {
-            if (!player.immobilized) return false;
+            if (!player.isOut) return false;
         }
-
         return true;
     }
 
@@ -125,7 +127,6 @@ public class Team : UdonSharpBehaviour
         {
             if (member == player) return true;
         }
-
         return false;
     }
 
@@ -133,7 +134,10 @@ public class Team : UdonSharpBehaviour
     {
         foreach(TeamMember member in Players)
         {
-
+            member.TeleportOut();
+            member.SetImmobilized(false);
+            member.Empty();
+            teamMemberPool.Return(member.gameObject);
         }
     }
 }
