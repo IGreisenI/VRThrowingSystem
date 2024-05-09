@@ -19,19 +19,22 @@ public class TeamMember : UdonSharpBehaviour
 
     [UdonSynced] public Vector3 playerPos;
 
+    private float timer = 0f;
+
     private void Update()
     {
-        if(playerAPI != null) { 
+        if(playerAPI != null) {
+            timer += Time.deltaTime;
+
             playerPos = playerAPI.GetPosition();
             transform.position = playerPos;
-        }
-        
-        RequestSerialization();
-    }
 
-    public override void OnDeserialization()
-    {
-        this.transform.position = playerPos;
+            if(timer - 0.3f > 0f)
+            {
+                timer = 0f;
+                RequestSerialization();
+            }
+        }
     }
 
     private void OnTriggerEnter(Collider other)

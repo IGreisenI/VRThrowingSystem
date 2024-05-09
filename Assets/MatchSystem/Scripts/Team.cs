@@ -4,6 +4,7 @@ using UnityEngine;
 using VRC.SDK3.Components;
 using VRC.SDKBase;
 using VRC.Udon;
+using ThrowingSystem;
 
 public class Team : UdonSharpBehaviour
 {
@@ -85,6 +86,21 @@ public class Team : UdonSharpBehaviour
     {
         teamScore = 0;
         RequestSerialization();
+    }
+
+    public void SetDiskColors(ThrowingObject[] disks)
+    {
+        foreach(TeamMember member in Players)
+        {
+            foreach(ThrowingObject disk in disks)
+            {
+                if(disk.GetPlayerName() == member.playerName)
+                {
+                    disk.SetDiskColor(teamColor);
+                    disk.SendCustomNetworkEvent(VRC.Udon.Common.Interfaces.NetworkEventTarget.All, "ChangeDiskColors"); 
+                }
+            }
+        }
     }
 
     public Color GetColor()

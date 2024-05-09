@@ -30,8 +30,10 @@ public class Round : UdonSharpBehaviour
                 PrepareRound();
             }
         }
-
-        RequestSerialization();
+        if (roundTime % 0.2f > 0.18f)
+        {
+            RequestSerialization();
+        }
     }
 
     public void PrepareRound()

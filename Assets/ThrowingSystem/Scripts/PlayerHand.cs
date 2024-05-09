@@ -65,9 +65,9 @@ namespace ThrowingSystem
             _relativeHandOffset = Networking.LocalPlayer.GetBonePosition(hand) - Networking.LocalPlayer.GetBonePosition(HumanBodyBones.Chest);
 
             // This is calculated so players can't just rotate and throw
-            _handPos = new Vector3(Vector3.Dot(_relativeHandOffset, transform.right), Vector3.Dot(_relativeHandOffset, transform.up), Vector3.Dot(_relativeHandOffset, transform.forward));
+            //_handPos = new Vector3(Vector3.Dot(_relativeHandOffset, transform.right), Vector3.Dot(_relativeHandOffset, transform.up), Vector3.Dot(_relativeHandOffset, transform.forward));
 
-            _handSpeed = (_handPos - _previousHandOffset) * handSpeedCoefficient;
+            _handSpeed = (_relativeHandOffset - _previousHandOffset) * handSpeedCoefficient;
 
             _previousHandOffset = _relativeHandOffset;
         }
@@ -102,7 +102,7 @@ namespace ThrowingSystem
 
         public bool CheckThrowing(bool playerSpeedThresholdExceeded)
         {
-            if (Input.GetKeyUp(desktopInput) && playerSpeedThresholdExceeded || IsVrThrowInput(playerSpeedThresholdExceeded))
+            if (Input.GetKeyUp(desktopInput) && (playerSpeedThresholdExceeded || _handSpeed.magnitude > 0f) || IsVrThrowInput(playerSpeedThresholdExceeded))
             {
                 grabbing = false;
                 return true;
@@ -156,7 +156,7 @@ namespace ThrowingSystem
             }
             else
             {
-                returnPoint = _player.GetBonePosition(HumanBodyBones.Head) + (headTrackingData.rotation * desktopOffset);
+                returnPoint = headTrackingData.position + (headTrackingData.rotation * desktopOffset);
             }
 
             if (disk.ReturnObjectToHand(returnPoint, hand))
@@ -220,7 +220,7 @@ namespace ThrowingSystem
 
         public bool HasDisk()
         {
-            return disk.enabled;
+            return disk.gameObject.activeSelf;
         }
     }
 }

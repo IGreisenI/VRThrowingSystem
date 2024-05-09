@@ -33,9 +33,12 @@ namespace ThrowingSystem
         [UdonSynced] private bool airborne = true;
         public bool Airborne { get { return airborne; } set { airborne = value; } }
         [UdonSynced] private bool _blocking = false;
+        
         private VRCPlayerApi _localPlayer;
         [UdonSynced] private string playerName;
+
         private HumanBodyBones hand;
+        [UdonSynced] private Color diskColor;
 
         #region BulletDrop
         [UdonSynced] private float airBounceTime = 0f;
@@ -189,14 +192,14 @@ namespace ThrowingSystem
                 transform.SetPositionAndRotation(target, Quaternion.identity);
                 objectActualPosition = target;
             }
-            else if (_distance > 2f)
+            else if (_distance > 1f)
             {
                 diskVelocity += (target - transform.position).normalized * returnCurve.Evaluate(returnTime / 5);
                 objectActualPosition = transform.position + diskVelocity;
             }
             else
             {
-                objectActualPosition = Vector3.Lerp(transform.position, target, Time.deltaTime / _returnSpeed);
+                objectActualPosition = target;
             }
 
             returnTime += Time.deltaTime;
@@ -263,6 +266,17 @@ namespace ThrowingSystem
         public string GetPlayerName()
         {
             return playerName;
+        }
+
+        public void SetDiskColor(Color color)
+        { 
+            diskColor = color;
+            RequestSerialization();
+        }
+
+        public void ChangeDiskColors()
+        {
+            GetComponent<MeshRenderer>().material.color = diskColor;
         }
     }
 }

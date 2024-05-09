@@ -12,6 +12,12 @@ public class TeamAssignmentTrigger : UdonSharpBehaviour
     {
         if (!Networking.LocalPlayer.isMaster) return;
 
+        foreach (TeamMember member in pool.GetComponentsInChildren<TeamMember>())
+        {
+            if (member.playerName == player.displayName)
+                return;
+        }
+
         AssingTeamMemeber(player);
         gameObject.SetActive(false);
     }

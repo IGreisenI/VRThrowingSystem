@@ -35,10 +35,18 @@ public class Match : UdonSharpBehaviour
     public void StartMatch()
     {
         roundNumber = 1;
+
+        firstTeam.ResetScore();
+        secondTeam.ResetScore();
+
+        firstTeam.SetDiskColors(throwingSystem.GetDisks());
+        secondTeam.SetDiskColors(throwingSystem.GetDisks());
+
         isInProgress = true;
         if (Networking.LocalPlayer.isMaster)
         {
             round.PrepareRound();
+            RequestSerialization();
         }
 
         scoreBoard.ShowMatchRound(roundNumber);
@@ -83,7 +91,6 @@ public class Match : UdonSharpBehaviour
         if (Networking.GetOwner(this.gameObject) == Networking.LocalPlayer)
         {
             CheckIfPlayerHit();
-            RequestSerialization();
         }
         else
         {
@@ -129,6 +136,7 @@ public class Match : UdonSharpBehaviour
         {
             round.StopRound();
             roundNumber++;
+            RequestSerialization();
             scoreBoard.ShowMatchRound(roundNumber);
         }
     }
@@ -145,6 +153,7 @@ public class Match : UdonSharpBehaviour
         round.StopRound();
         firstTeam.DisbandTeam();
         secondTeam.DisbandTeam();
+        RequestSerialization();
     }
 
     public void CheckIfPlayerHit()

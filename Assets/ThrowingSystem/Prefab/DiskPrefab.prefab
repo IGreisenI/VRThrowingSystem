@@ -328,10 +328,10 @@ MonoBehaviour:
   arenaCollider: {fileID: 0}
   guardObject: {fileID: 6123364274614358525}
   diskAudioSource: {fileID: 8125400353469182969}
-  airBounceTimeLimit: 5
-  gravityMultiplier: 1
+  airBounceTimeLimit: 1
+  gravityMultiplier: 0.1
   returnMultiplierAirborne: 15
-  returnMultiplierInHand: 200
+  returnMultiplierInHand: 30
   distanceThreshold: 20
   diskSpeedLimit: 20
   returnCurve:
@@ -340,8 +340,8 @@ MonoBehaviour:
     - serializedVersion: 3
       time: 0
       value: 0
-      inSlope: 0
-      outSlope: 0
+      inSlope: 2
+      outSlope: 2
       tangentMode: 0
       weightedMode: 0
       inWeight: 0

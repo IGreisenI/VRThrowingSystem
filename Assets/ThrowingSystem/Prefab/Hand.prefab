@@ -54,10 +54,10 @@ MonoBehaviour:
     PrefabModifications: []
     SerializationNodes: []
   _udonSharpBackingUdonBehaviour: {fileID: -1700087784477364529}
-  desktopPlayerSpeedMultiplyer: 0
-  desktopThrowMultiplyer: 0
-  vrPlayerSpeedMultiplyer: 0
-  vrThrowMultiplyer: 0
+  desktopPlayerSpeedMultiplyer: 10
+  desktopThrowMultiplyer: 20
+  vrPlayerSpeedMultiplyer: 12
+  vrThrowMultiplyer: 2
 --- !u!114 &-1700087784477364529
 MonoBehaviour:
   m_ObjectHideFlags: 0

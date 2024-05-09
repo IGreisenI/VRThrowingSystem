@@ -60,13 +60,13 @@ MonoBehaviour:
     SerializationNodes: []
   _udonSharpBackingUdonBehaviour: {fileID: 4686891513319392472}
   spawnPoint: {fileID: 0}
-  autoBlock: 1
-  hapticDuration: 0
-  hapticAmplitude: 0
-  hapticFrequency: 0
-  desktopPlayerSpeedThreshold: 0
+  autoBlock: 0
+  hapticDuration: 0.1
+  hapticAmplitude: 1
+  hapticFrequency: 0.5
+  desktopPlayerSpeedThreshold: 3
   desktopHandSpeedThreshold: 0
-  handSpeedThreshold: 1
+  handSpeedThreshold: 3
   vrPlayerSpeedThreshold: 0
   buttonReleaseThreshold: 0.1
   leftPlayerHand: {fileID: 5885628935307366857}

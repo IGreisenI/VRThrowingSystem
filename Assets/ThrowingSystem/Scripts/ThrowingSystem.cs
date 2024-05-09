@@ -49,5 +49,10 @@ namespace ThrowingSystem
                 }
             }
         }
+
+        public ThrowingObject[] GetDisks()
+        {
+            return pool.GetComponentsInChildren<ThrowingObject>();
+        }
     }
 }
